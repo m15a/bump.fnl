@@ -2,23 +2,28 @@
 
 # Utility to automatically bump version in bump.fnl and CHANGELOG.md.
 
-# Suppose you have already edited version in bump.fnl and then
-# run this script, which will modify CHANGELOG.md and bump.fnl accordingly.
-# Arguments to this script is passed to ./bump.fnl.
+# Run this script, which will modify CHANGELOG.md and bump.fnl accordingly.
+# Arguments to this script are passed to ./bump.fnl. Say, you want to bump
+# major version, then try
+#
+#     $ ./bump.bash --major
+#
+# and see what changed by `git diff`.
 
 set -euo pipefail
 
-CURRENT_VERSION="$(fennel -e '(let [{: version} (require :bump)] version)')"
+PRERELEASE_LABEL=dev
+CURRENT_VERSION="$(fennel -e '(. (require :bump) :version)')"
 NEXT_VERSION="$(./bump.fnl --bump "$CURRENT_VERSION" "$@")"
 
-if echo "$CURRENT_VERSION" | grep -q dev
+if echo "$CURRENT_VERSION" | grep -q "$PRERELEASE_LABEL"
 then
     CURRENT_REF=HEAD
 else
     CURRENT_REF="v$CURRENT_VERSION"
 fi
 
-if echo "$NEXT_VERSION" | grep -q dev
+if echo "$NEXT_VERSION" | grep -q "$PRERELEASE_LABEL"
 then
     NEXT_DATE='???'
     NEXT_REF=HEAD
@@ -30,7 +35,7 @@ fi
 sed -Ei bump.fnl \
     -e "s@(local version :)$CURRENT_VERSION@\1$NEXT_VERSION@"
 
-if echo "$CURRENT_VERSION" | grep -q dev
+if echo "$CURRENT_VERSION" | grep -q "$PRERELEASE_LABEL"
 then
     sed -Ei CHANGELOG.md \
         -e "s@^## \[$CURRENT_VERSION] - \?\?\?@## [$NEXT_VERSION] - $NEXT_DATE@" \
