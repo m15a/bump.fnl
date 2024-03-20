@@ -378,11 +378,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1710908742,
-        "narHash": "sha256-kuYQz63R/R1UNZa2weIuczgnLrWgPAplMrXN51mxV/E=",
+        "lastModified": 1710919261,
+        "narHash": "sha256-eyBkCEMZKt9vCZ1zzH0CDyekaSiP7GN3+myHE7sOLhI=",
         "owner": "~m15a",
         "repo": "fnldoc",
-        "rev": "651c8655e0f47e0e36d8b5c4b20ff1d3817ea504",
+        "rev": "943d87cbdbfdcf9c07a5328a2c66e073c7615f50",
         "type": "sourcehut"
       },
       "original": {
