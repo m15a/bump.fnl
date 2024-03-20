@@ -2,7 +2,7 @@
 
 ;;;; bump.fnl - a tiny helper for version bumping.
 ;;;;
-;;;; <https://git.sr.ht/~m15a/bump.fnl>
+;;;; <https://sr.ht/~m15a/bump.fnl>
 
 ;;;; ## Synopsis
 ;;;;
