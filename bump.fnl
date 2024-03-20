@@ -49,6 +49,8 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
+(local version :0.1.0-dev)
+
 (fn decompose [version]
   "Decompose `version` string to a table containing its components."
   (if (= :string (type version))
@@ -124,6 +126,12 @@
 (when (= :--bump ...)
   (main (doto [...] (table.remove 1))))
 
-{: decompose : compose : bump/major : bump/minor : bump/patch : bump/release}
+{: decompose
+ : compose
+ : bump/major
+ : bump/minor
+ : bump/patch
+ : bump/release
+ : version}
 
 ;; vim: tw=80 spell
