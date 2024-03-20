@@ -2,7 +2,7 @@
 
 bump.fnl - a tiny helper for version bumping.
 
-<https://git.sr.ht/~m15a/bump.fnl>
+<https://sr.ht/~m15a/bump.fnl>
 
 ## Synopsis
 
@@ -33,16 +33,16 @@ details.
 
 **Table of contents**
 
-- Function: [`bump/major`](#function-bumpmajor)
-- Function: [`bump/minor`](#function-bumpminor)
-- Function: [`bump/patch`](#function-bumppatch)
-- Function: [`bump/release`](#function-bumprelease)
-- Function: [`compose`](#function-compose)
-- Function: [`decompose`](#function-decompose)
+- Function: [bump/major](#function-bumpmajor)
+- Function: [bump/minor](#function-bumpminor)
+- Function: [bump/patch](#function-bumppatch)
+- Function: [bump/release](#function-bumprelease)
+- Function: [compose](#function-compose)
+- Function: [decompose](#function-decompose)
 
-### Function: `bump/major`
+### Function: bump/major
 
-```
+```fennel
 (bump/major version)
 ```
 
@@ -54,9 +54,9 @@ Bump major version number in the `version` string.
 (assert (= "1.0.0" (bump/major "0.9.28")))
 ```
 
-### Function: `bump/minor`
+### Function: bump/minor
 
-```
+```fennel
 (bump/minor version)
 ```
 
@@ -68,9 +68,9 @@ Bump minor version number in the `version` string.
 (assert (= "0.3.0-dev" (bump/minor "0.2.3-dev")))
 ```
 
-### Function: `bump/patch`
+### Function: bump/patch
 
-```
+```fennel
 (bump/patch version)
 ```
 
@@ -82,9 +82,9 @@ Bump patch version number in the `version` string.
 (assert (= "0.6.1-alpha" (bump/patch "0.6.0-alpha")))
 ```
 
-### Function: `bump/release`
+### Function: bump/release
 
-```
+```fennel
 (bump/release version)
 ```
 
@@ -96,9 +96,9 @@ Strip pre-release label from the `version` string.
 (assert (= "1.2.1" (bump/release "1.2.1-dev")))
 ```
 
-### Function: `compose`
+### Function: compose
 
-```
+```fennel
 (compose {:label label :major major :minor minor :patch patch})
 ```
 
@@ -116,9 +116,9 @@ Compose version string from a table that contains:
            (compose {:major 0 :minor 1 :patch 0 :label :dev})))
 ```
 
-### Function: `decompose`
+### Function: decompose
 
-```
+```fennel
 (decompose version)
 ```
 
@@ -142,5 +142,5 @@ Copyright (c) 2024 NACAMURA Mitsuhiro
 
 License: [BSD 3-clause](./LICENSE)
 
-<!-- Generated with Fnldoc 1.1.0-dev-651c865
+<!-- Generated with Fnldoc 1.1.0-dev-943d87c
      https://sr.ht/~m15a/fnldoc/ -->
