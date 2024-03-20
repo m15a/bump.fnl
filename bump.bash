@@ -8,7 +8,7 @@
 #
 #     $ ./bump.bash --major
 #
-# and see what changed by `git diff`.
+# and see what changed by `git show`.
 
 set -euo pipefail
 
@@ -49,3 +49,17 @@ else
         -e "s@^(\[2]: .*)@\1\n\n## [$NEXT_VERSION] - $NEXT_DATE@" \
         -e "s@^(\[$CURRENT_VERSION]: <(.+)$CURRENT_REF>)@[$NEXT_VERSION]: <\2$NEXT_REF>\n\1@"
 fi
+
+make
+git add bump.fnl README.md CHANGELOG.md
+
+if is_prerelease "$NEXT_VERSION"
+then
+    git commit -m "prerelease: $NEXT_VERSION"
+else
+    git commit -m "release: $NEXT_VERSION"
+    git tag "v$NEXT_VERSION"
+fi
+
+
+
