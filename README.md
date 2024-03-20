@@ -101,11 +101,18 @@ Bump patch version number in the `version` string.
 
 Append pre-release `?label` (default: `dev`) to the `version` string.
 
+Besides, it increments patch version number. If you like to increment
+other than patch number, compose it with any other `bump/*` function.
+
 #### Example
 
 ```fennel
 (assert (= "1.2.1-dev" (bump/prerelease "1.2.0")))
 (assert (= "1.2.1-alpha" (bump/prerelease "1.2.0" :alpha)))
+
+(assert (= "1.2.0-dev" (-> "1.1.4"
+                           bump/prerelease
+                           bump/minor)))
 ```
 
 ### Function: bump/release
