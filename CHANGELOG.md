@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning][2].
 
 ### Added
 
+- Chained version bumping via command line options
 - `--ANYLABEL` option to bump to pre-release version:
   `ANYLABEL` can be `dev`, `alpha`, or `anything`, which will be
   appended with prefix `-` after patch number.

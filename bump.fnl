@@ -21,11 +21,11 @@
 ;;;;     $ ./bump.fnl --bump 1.2.3 --dev
 ;;;;     1.2.4-dev
 ;;;;
-;;;;     $ ./bump.fnl --bump 1.2.3 --alpha
-;;;;     1.2.4-alpha
-;;;;
 ;;;;     $ ./bump.fnl --bump 1.2.3 --any-string
 ;;;;     1.2.4-any-string
+;;;;
+;;;;     $ ./bump.fnl --bump 1.2.3 --chain --minor --minor
+;;;;     1.4.0-chain
 
 ;;;; ## Description
 ;;;;
@@ -205,25 +205,33 @@ See `compose' for components' detail.
                    " [--dev|--alpha|--any-string]"
                    " VERSION" "\n"))
 
+(fn <<? [f ?g]
+  (if ?g #(f (?g $)) f))
+
 (fn main [args]
   (when (= nil (. args 1))
     (help)
     (os.exit -1))
-  (let [{: bump : version}
-        (accumulate [state {:bump bump/release} _ arg (ipairs args)]
-          (case arg
-            :--major (doto state (tset :bump bump/major))
-            :-M (doto state (tset :bump bump/major))
-            :--minor (doto state (tset :bump bump/minor))
-            :-m (doto state (tset :bump bump/minor))
-            :--patch (doto state (tset :bump bump/patch))
-            :-p (doto state (tset :bump bump/patch))
-            (where flag (flag:match "^%-%-[^%-]+.*"))
-            (let [label (flag:match "^%-%-([^%-]+.*)")]
-              (doto state (tset :bump #(bump/prerelease $ label))))
-            version (doto state (tset :version version))))]
-    (io.stdout:write (bump version) "\n")
-    (os.exit 0)))
+  (var bump nil)
+  (var version nil)
+  (each [_ arg (ipairs args)]
+    (case arg
+      :--major (set bump (<<? bump/major bump))
+      :-M      (set bump (<<? bump/major bump))
+      :--minor (set bump (<<? bump/minor bump))
+      :-m      (set bump (<<? bump/minor bump))
+      :--patch (set bump (<<? bump/patch bump))
+      :-p      (set bump (<<? bump/patch bump))
+      (where flag (flag:match "^%-%-[^%-]+.*"))
+      (let [label (flag:match "^%-%-([^%-]+.*)")]
+        (set bump (<<? #(bump/prerelease $ label) bump)))
+      version* (set version version*)))
+  (when (= nil version)
+    (help)
+    (os.exit -1))
+  (set bump (or bump bump/release))
+  (io.stdout:write (bump version) "\n")
+  (os.exit 0))
 
 (when (= :--bump ...)
   (main (doto [...] (table.remove 1))))

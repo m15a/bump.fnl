@@ -21,11 +21,11 @@ bump.fnl - a tiny helper for version bumping.
     $ ./bump.fnl --bump 1.2.3 --dev
     1.2.4-dev
 
-    $ ./bump.fnl --bump 1.2.3 --alpha
-    1.2.4-alpha
-
     $ ./bump.fnl --bump 1.2.3 --any-string
     1.2.4-any-string
+
+    $ ./bump.fnl --bump 1.2.3 --chain --minor --minor
+    1.4.0-chain
 
 ## Description
 
