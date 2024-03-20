@@ -2,8 +2,7 @@
 
 ;;;; bump.fnl - a tiny helper for version bumping.
 ;;;;
-;;;; * URL: https://git.sr.ht/~m15a/bump.fnl
-;;;; * License: BSD 3-clause
+;;;; <https://git.sr.ht/~m15a/bump.fnl>
 
 ;;;; ## Synopsis
 ;;;;
@@ -19,8 +18,20 @@
 ;;;;     $ ./bump.fnl --bump 1.2.3-dev --patch # or -p
 ;;;;     1.2.4-dev
 
-;;; BSD 3-Clause License
-;;; 
+;;;; ## Description
+;;;;
+;;;; This is a [Fennel] script to bump version string in command line.
+;;;; You can use it in command line as shown in [Synopsis](#synopsis).
+;;;; It also can be used as a library to compose, decompose, or bump version
+;;;; string. See [API documentation](#api-documentation) for more
+;;;; details.
+;;;;
+;;;; [Fennel]: https://fennel-lang.org/
+
+;;;; ## License
+;;;;
+;;;; [BSD 3-clause](./LICENSE)
+
 ;;; Copyright (c) 2024, NACAMURA Mitsuhiro
 ;;; 
 ;;; Redistribution and use in source and binary forms, with or without
