@@ -178,7 +178,7 @@ See `compose' for components' detail.
     (help)
     (os.exit -1))
   (let [{: bump : version}
-        (accumulate [state {:bump bump/release} _ arg (ipairs arg)]
+        (accumulate [state {:bump bump/release} _ arg (ipairs args)]
           (case arg
             :--major (doto state (tset :bump bump/major))
             :-M (doto state (tset :bump bump/major))
