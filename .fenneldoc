@@ -5,6 +5,6 @@
  :version? true
  :copyright? true
  :license? true
- :project-version "0.1.0-dev"
+ :project-version "0.1.0"
  :project-copyright "Copyright (c) 2024 NACAMURA Mitsuhiro"
  :project-license "[BSD 3-clause](./LICENSE)"}

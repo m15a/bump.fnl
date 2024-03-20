@@ -60,7 +60,7 @@
 
 ;;;; ## API documentation
 
-(local version :0.1.0-dev)
+(local version :0.1.0)
 
 (fn decompose [version]
   "Decompose `version` string to a table containing its components.
