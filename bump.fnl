@@ -17,6 +17,15 @@
 ;;;;
 ;;;;     $ ./bump.fnl --bump 1.2.3-dev --patch # or -p
 ;;;;     1.2.4-dev
+;;;;
+;;;;     $ ./bump.fnl --bump 1.2.3 --dev
+;;;;     1.2.4-dev
+;;;;
+;;;;     $ ./bump.fnl --bump 1.2.3 --alpha
+;;;;     1.2.4-alpha
+;;;;
+;;;;     $ ./bump.fnl --bump 1.2.3 --any-string
+;;;;     1.2.4-any-string
 
 ;;;; ## Description
 ;;;;
@@ -166,11 +175,33 @@ See `compose' for components' detail.
     (compose (doto version
                (tset :label nil)))))
 
+(fn bump/prerelease [version ?label]
+  "Append pre-release `?label` (default: `dev`) to the `version` string.
+
+# Example
+
+```fennel
+(assert (= \"1.2.1-dev\" (bump/prerelease \"1.2.0\")))
+(assert (= \"1.2.1-alpha\" (bump/prerelease \"1.2.0\" :alpha)))
+```"
+  (let [version (decompose version)
+        label (if ?label
+                  (let [{: view} (require :fennel)]
+                    (assert (and (= :string (type ?label))
+                                 (< 0 (length ?label)))
+                            (.. "invalid pre-release label: " (view ?label)))
+                    ?label)
+                  :dev)]
+    (compose (doto version
+               (tset :patch (+ version.patch 1))
+               (tset :label label)))))
+
 (fn help []
   (io.stderr:write "USAGE: " (. arg 0) " --bump"
                    " [--major|-M]"
                    " [--minor|-m]"
                    " [--patch|-p]"
+                   " [--dev|--alpha|--any-string]"
                    " VERSION" "\n"))
 
 (fn main [args]
@@ -186,6 +217,9 @@ See `compose' for components' detail.
             :-m (doto state (tset :bump bump/minor))
             :--patch (doto state (tset :bump bump/patch))
             :-p (doto state (tset :bump bump/patch))
+            (where flag (flag:match "^%-%-[^%-]+.*"))
+            (let [label (flag:match "^%-%-([^%-]+.*)")]
+              (doto state (tset :bump #(bump/prerelease $ label))))
             version (doto state (tset :version version))))]
     (io.stdout:write (bump version) "\n")
     (os.exit 0)))
@@ -199,6 +233,7 @@ See `compose' for components' detail.
  : bump/minor
  : bump/patch
  : bump/release
+ : bump/prerelease
  : version}
 
 ;; vim: tw=80 spell

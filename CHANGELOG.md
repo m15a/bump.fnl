@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning][2].
 [1]: <https://keepachangelog.com/en/1.1.0/>
 [2]: <https://semver.org/spec/v2.0.0.html>
 
+### Added
+
+- `--ANYLABEL` option to bump to pre-release version:
+  `ANYLABEL` can be `dev`, `alpha`, or `anything`, which will be
+  appended with prefix `-` after patch number.
+
 ## [0.1.0] - 2024-03-20 +0900
 
 ### Added
