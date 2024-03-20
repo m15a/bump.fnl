@@ -49,14 +49,28 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
+;;;; ## API documentation
+
 (local version :0.1.0-dev)
 
 (fn decompose [version]
-  "Decompose `version` string to a table containing its components."
+  "Decompose `version` string to a table containing its components.
+
+See `compose' for components' detail.
+
+# Example
+
+```fennel
+(let [decomposed (decompose \"0.1.0-dev\")]
+  (assert (= 0 decomposed.major))
+  (assert (= 1 decomposed.minor))
+  (assert (= 0 decomposed.patch))
+  (assert (= :dev decomposed.label)))
+```"
   (if (= :string (type version))
-      (let [version* {:major (version:match "^%d+")
-                      :minor (version:match "^%d+%.(%d+)")
-                      :patch (version:match "^%d+%.%d+%.(%d+)")
+      (let [version* {:major (tonumber (version:match "^%d+"))
+                      :minor (tonumber (version:match "^%d+%.(%d+)"))
+                      :patch (tonumber (version:match "^%d+%.%d+%.(%d+)"))
                       :label (version:match "^%d+%.%d+%.%d+%-(.+)")}]
         (if (and version*.major version*.minor version*.patch)
             version*
@@ -65,6 +79,19 @@
         (error (.. "version string expected, got " (view version))))))
 
 (fn compose [{: major : minor : patch : label}]
+  "Compose version string from a table that contains:
+
+- `major`: major version,
+- `minor`: minor version,
+- `patch`: patch version, and
+- `label`: suffix label that implies pre-release version (optional).
+
+# Example
+
+```fennel
+(assert (= \"0.1.0-dev\"
+           (compose {:major 0 :minor 1 :patch 0 :label :dev})))
+```"
   (let [major (tonumber major)
         minor (tonumber minor)
         patch (tonumber patch)
@@ -80,21 +107,52 @@
                      (view label)))))))
 
 (fn bump/major [version]
+  "Bump major version number in the `version` string.
+
+# Example
+
+```fennel
+(assert (= \"1.0.0\" (bump/major \"0.9.28\")))
+```"
   (let [version (decompose version)]
     (compose (doto version
-               (tset :major (+ version.major 1))))))
+               (tset :major (+ version.major 1))
+               (tset :minor 0)
+               (tset :patch 0)))))
 
 (fn bump/minor [version]
+  "Bump minor version number in the `version` string.
+
+# Example
+
+```fennel
+(assert (= \"0.3.0-dev\" (bump/minor \"0.2.3-dev\")))
+```"
   (let [version (decompose version)]
     (compose (doto version
-               (tset :minor (+ version.minor 1))))))
+               (tset :minor (+ version.minor 1))
+               (tset :patch 0)))))
 
 (fn bump/patch [version]
+  "Bump patch version number in the `version` string.
+
+# Example
+
+```fennel
+(assert (= \"0.6.1-alpha\" (bump/patch \"0.6.0-alpha\")))
+```"
   (let [version (decompose version)]
     (compose (doto version
                (tset :patch (+ version.patch 1))))))
 
 (fn bump/release [version]
+  "Strip pre-release label from the `version` string.
+
+# Example
+
+```fennel
+(assert (= \"1.2.1\" (bump/release \"1.2.1-dev\")))
+```"
   (let [version (decompose version)]
     (compose (doto version
                (tset :label nil)))))
