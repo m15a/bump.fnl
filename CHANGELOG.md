@@ -22,4 +22,4 @@ and this project adheres to [Semantic Versioning][2].
 
 [0.1.0]: <https://git.sr.ht/~m15a/bump.fnl/refs/v0.1.0>
 
-<!-- vim: set tw=72 spell -->
+<!-- vim: set tw=72 spell: -->
