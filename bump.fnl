@@ -28,11 +28,9 @@
 ;;;;
 ;;;; [Fennel]: https://fennel-lang.org/
 
-;;;; ## License
-;;;;
-;;;; [BSD 3-clause](./LICENSE)
-
-;;; Copyright (c) 2024, NACAMURA Mitsuhiro
+;;; BSD 3-Clause License
+;;;
+;;; Copyright (c) 2024 NACAMURA Mitsuhiro
 ;;; 
 ;;; Redistribution and use in source and binary forms, with or without
 ;;; modification, are permitted provided that the following conditions are met:

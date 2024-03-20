@@ -6,15 +6,17 @@
       url = "github:m15a/flake-fennel-tools";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    fnldoc.url = "sourcehut:~m15a/fnldoc";
   };
 
-  outputs = { self, nixpkgs, flake-utils, fennel-tools, ... }:
+  outputs = inputs @ { self, nixpkgs, flake-utils, fennel-tools, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
           inherit system;
           overlays = [
             fennel-tools.overlays.default
+            inputs.fnldoc.overlays.default
           ];
         };
       in
@@ -25,10 +27,12 @@
           in
           pkgs.mkShell {
             buildInputs = [
+              pkgs.gnumake
               fennel
               fennel.lua
               pkgs.fnlfmt-unstable
               pkgs.fennel-ls-unstable
+              pkgs.fnldoc
             ] ++ (with fennel.lua.pkgs; [
               readline
             ]);

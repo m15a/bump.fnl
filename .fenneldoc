@@ -1,0 +1,10 @@
+;; -*- mode: fennel; -*- vi:ft=fennel
+;; Configuration file for Fnldoc 1.1.0-dev-651c865
+;; https://sr.ht/~m15a/fnldoc/
+{:out-dir "."
+ :version? true
+ :copyright? true
+ :license? true
+ :project-version "0.1.0-dev"
+ :project-copyright "Copyright (c) 2024 NACAMURA Mitsuhiro"
+ :project-license "[BSD 3-clause](./LICENSE)"}
