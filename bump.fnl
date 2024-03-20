@@ -31,6 +31,7 @@
 ;;;;
 ;;;; This is a [Fennel] script to bump version string in command line.
 ;;;; You can use it in command line as shown in [Synopsis](#synopsis).
+;;;; See an example usage [`./bump.bash`](./bump.bash).
 ;;;; It also can be used as a library to compose, decompose, or bump version
 ;;;; string. See [API documentation](#api-documentation) for more
 ;;;; details.

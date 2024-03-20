@@ -1,4 +1,4 @@
-# Bump.fnl (0.1.0)
+# Bump.fnl (0.2.0-dev)
 
 bump.fnl - a tiny helper for version bumping.
 
@@ -18,10 +18,20 @@ bump.fnl - a tiny helper for version bumping.
     $ ./bump.fnl --bump 1.2.3-dev --patch # or -p
     1.2.4-dev
 
+    $ ./bump.fnl --bump 1.2.3 --dev
+    1.2.4-dev
+
+    $ ./bump.fnl --bump 1.2.3 --alpha
+    1.2.4-alpha
+
+    $ ./bump.fnl --bump 1.2.3 --any-string
+    1.2.4-any-string
+
 ## Description
 
 This is a [Fennel] script to bump version string in command line.
 You can use it in command line as shown in [Synopsis](#synopsis).
+See an example usage [`./bump.bash`](./bump.bash).
 It also can be used as a library to compose, decompose, or bump version
 string. See [API documentation](#api-documentation) for more
 details.
@@ -36,6 +46,7 @@ details.
 - Function: [bump/major](#function-bumpmajor)
 - Function: [bump/minor](#function-bumpminor)
 - Function: [bump/patch](#function-bumppatch)
+- Function: [bump/prerelease](#function-bumpprerelease)
 - Function: [bump/release](#function-bumprelease)
 - Function: [compose](#function-compose)
 - Function: [decompose](#function-decompose)
@@ -80,6 +91,21 @@ Bump patch version number in the `version` string.
 
 ```fennel
 (assert (= "0.6.1-alpha" (bump/patch "0.6.0-alpha")))
+```
+
+### Function: bump/prerelease
+
+```fennel
+(bump/prerelease version ?label)
+```
+
+Append pre-release `?label` (default: `dev`) to the `version` string.
+
+#### Example
+
+```fennel
+(assert (= "1.2.1-dev" (bump/prerelease "1.2.0")))
+(assert (= "1.2.1-alpha" (bump/prerelease "1.2.0" :alpha)))
 ```
 
 ### Function: bump/release
