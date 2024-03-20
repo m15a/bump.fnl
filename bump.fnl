@@ -66,18 +66,15 @@
   (let [major (tonumber major)
         minor (tonumber minor)
         patch (tonumber patch)
-        label*  (when label (tostring label))]
+        label* (when label (tostring label))]
     (if (and major minor patch
-             (or (= nil label)
-                 (= :string (type label*))))
+             (or (= nil label) (= :string (type label*))))
         (if label
-            (.. major :. minor :. patch :- label*)
-            (.. major :. minor :. patch))
+            (.. major "." minor "." patch "-" label*)
+            (.. major "." minor "." patch))
         (let [{: view} (require :fennel)]
           (error (.. "invalid version component(s): "
-                     (view major) ", "
-                     (view minor) ", "
-                     (view patch) ", "
+                     (view major) ", " (view minor) ", " (view patch) ", "
                      (view label)))))))
 
 (fn bump/major [version]
@@ -101,20 +98,18 @@
                (tset :label nil)))))
 
 (fn help []
- (io.stderr:write "USAGE: " (. arg 0) " --bump"
-                  " [--major|-M]"
-                  " [--minor|-m]"
-                  " [--patch|-p]"
-                  " VERSION"
-                  "\n"))
+  (io.stderr:write "USAGE: " (. arg 0) " --bump"
+                   " [--major|-M]"
+                   " [--minor|-m]"
+                   " [--patch|-p]"
+                   " VERSION" "\n"))
 
 (fn main [args]
   (when (= nil (. args 1))
     (help)
     (os.exit -1))
   (let [{: bump : version}
-        (accumulate [state {:bump bump/release}
-                     _ arg (ipairs arg)]
+        (accumulate [state {:bump bump/release} _ arg (ipairs arg)]
           (case arg
             :--major (doto state (tset :bump bump/major))
             :-M (doto state (tset :bump bump/major))
@@ -129,10 +124,6 @@
 (when (= :--bump ...)
   (main (doto [...] (table.remove 1))))
 
-{: decompose
- : compose 
- : bump/major
- : bump/minor
- : bump/patch
- : bump/release}
+{: decompose : compose : bump/major : bump/minor : bump/patch : bump/release}
+
 ;; vim: tw=80 spell
