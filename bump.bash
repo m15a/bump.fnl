@@ -16,14 +16,18 @@ PRERELEASE_LABEL=dev
 CURRENT_VERSION="$(fennel -e '(. (require :bump) :version)')"
 NEXT_VERSION="$(./bump.fnl --bump "$CURRENT_VERSION" "$@")"
 
-if echo "$CURRENT_VERSION" | grep -q "$PRERELEASE_LABEL"
+is_prerelease() {
+    echo "$1" | grep -q "$PRERELEASE_LABEL"
+}
+
+if is_prerelease "$CURRENT_VERSION"
 then
     CURRENT_REF=HEAD
 else
     CURRENT_REF="v$CURRENT_VERSION"
 fi
 
-if echo "$NEXT_VERSION" | grep -q "$PRERELEASE_LABEL"
+if is_prerelease "$NEXT_VERSION"
 then
     NEXT_DATE='???'
     NEXT_REF=HEAD
@@ -35,7 +39,7 @@ fi
 sed -Ei bump.fnl \
     -e "s@(local version :)$CURRENT_VERSION@\1$NEXT_VERSION@"
 
-if echo "$CURRENT_VERSION" | grep -q "$PRERELEASE_LABEL"
+if is_prerelease "$CURRENT_VERSION"
 then
     sed -Ei CHANGELOG.md \
         -e "s@^## \[$CURRENT_VERSION] - \?\?\?@## [$NEXT_VERSION] - $NEXT_DATE@" \
