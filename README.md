@@ -96,10 +96,10 @@ Bump patch version number in the `version` string.
 ### Function: bump/prerelease
 
 ```fennel
-(bump/prerelease version ?label)
+(bump/prerelease version ?prerelease)
 ```
 
-Append pre-release `?label` (default: `dev`) to the `version` string.
+Append `?prerelease` label (default: `dev`) to the `version` string.
 
 Besides, it increments patch version number. If you like to increment
 other than patch number, compose it with any other `bump/*` function.
@@ -121,18 +121,18 @@ other than patch number, compose it with any other `bump/*` function.
 (bump/release version)
 ```
 
-Strip pre-release label from the `version` string.
+Strip pre-release and/or build label(s) from the `version` string.
 
 #### Example
 
 ```fennel
-(assert (= "1.2.1" (bump/release "1.2.1-dev")))
+(assert (= "1.2.1" (bump/release "1.2.1-dev+001")))
 ```
 
 ### Function: compose
 
 ```fennel
-(compose {:label label :major major :minor minor :patch patch})
+(compose {:build build :major major :minor minor :patch patch :prerelease prerelease})
 ```
 
 Compose version string from a table that contains:
@@ -140,13 +140,21 @@ Compose version string from a table that contains:
 - `major`: major version,
 - `minor`: minor version,
 - `patch`: patch version, and
-- `label`: suffix label that implies pre-release version (optional).
+- `prerelease`: suffix label that implies pre-release version (optional).
+- `build`: suffix label that attaches build meta information (optional).
 
-#### Example
+#### Examples
 
 ```fennel
 (assert (= "0.1.0-dev"
-           (compose {:major 0 :minor 1 :patch 0 :label :dev})))
+           (compose {:major 0 :minor 1 :patch 0
+                     :prerelease :dev})))
+(assert (= "0.1.0+rc1"
+           (compose {:major 0 :minor 1 :patch 0
+                     :build :rc1})))
+(assert (= "0.1.0-test-case+exp.1"
+           (compose {:major 0 :minor 1 :patch 0
+                     :prerelease :test-case :build :exp.1})))
 ```
 
 ### Function: decompose
@@ -159,14 +167,25 @@ Decompose `version` string to a table containing its components.
 
 See [`compose`](#function-compose) for components' detail.
 
-#### Example
+#### Examples
 
 ```fennel
 (let [decomposed (decompose "0.1.0-dev")]
   (assert (= 0 decomposed.major))
   (assert (= 1 decomposed.minor))
   (assert (= 0 decomposed.patch))
-  (assert (= :dev decomposed.label)))
+  (assert (= :dev decomposed.prerelease)))
+
+(let [decomposed (decompose "0.1.0-dev-1+0.0.1")]
+  (assert (= 0 decomposed.major))
+  (assert (= 1 decomposed.minor))
+  (assert (= 0 decomposed.patch))
+  (assert (= :dev-1 decomposed.prerelease))
+  (assert (= :0.0.1 decomposed.build)))
+
+(let [(ok? msg) (pcall decompose "0.0.1+a+b")]
+  (assert (and (= false ok?)
+               (= "expected one build tag, found many: 0.0.1+a+b" msg))))
 ```
 
 ---
