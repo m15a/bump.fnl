@@ -142,21 +142,22 @@ See `compose' for components' detail.
            (compose {:major 0 :minor 1 :patch 0
                      :prerelease :test-case :build :exp.1})))
 ```"
-  (let [major (tonumber major)
-        minor (tonumber minor)
-        patch (tonumber patch)
-        prerelease* (when prerelease (tostring prerelease))
-        build* (when build (tostring build))]
-    (if (and major minor patch
-             (or (= nil prerelease) (= :string (type prerelease*)))
-             (or (= nil build) (= :string (type build*))))
-        (if (and prerelease build)
-            (.. major "." minor "." patch "-" prerelease* "+" build*)
-            (and prerelease (not build))
-            (.. major "." minor "." patch "-" prerelease*)
-            (and (not prerelease) build)
-            (.. major "." minor "." patch "+" build*)
-            (.. major  "." minor "." patch))
+  (let [major* (tonumber major)
+        minor* (tonumber minor)
+        patch* (tonumber patch)
+        prerelease* (when (not= nil prerelease) (tostring prerelease))
+        build* (when (not= nil build) (tostring build))]
+    (if (and major* minor* patch*
+             (or (= nil prerelease) prerelease*)
+             (or (= nil build) build*))
+        (let [version-core (.. major* "." minor* "." patch*)]
+          (if (and prerelease* build*)
+              (.. version-core "-" prerelease* "+" build*)
+              prerelease*
+              (.. version-core "-" prerelease*)
+              build*
+              (.. version-core "+" build*)
+              version-core))
         (let [{: view} (require :fennel)]
           (error (.. "invalid version component(s): "
                      (view {: major : minor : patch : prerelease : build})))))))
