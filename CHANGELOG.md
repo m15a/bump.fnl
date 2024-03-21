@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning][2].
 
 [#5]: <https://todo.sr.ht/~m15a/bump.fnl/5>
 
+### Added
+
+- Support to bump version string in Fennel script file [[#4]]
+
+[#4]: <https://todo.sr.ht/~m15a/bump.fnl/4>
+
 ## [0.2.0] - 2024-03-21 +0900
 
 ### Added

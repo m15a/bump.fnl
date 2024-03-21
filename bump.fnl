@@ -26,12 +26,18 @@
 ;;;;
 ;;;;     $ ./bump.fnl --bump 1.2.3 --chain --minor --minor
 ;;;;     1.4.0-chain
+;;;;
+;;;;     $ ./bump.fnl --bump bump.fnl --major
+;;;;     $ grep 'local version' bump.fnl
+;;;;     (local version :2.0.0-dev)
 
 ;;;; ## Description
 ;;;;
-;;;; This is a [Fennel] script to bump version string in command line.
-;;;; You can use it in command line as shown in [Synopsis](#synopsis).
+;;;; This is a [Fennel] script to bump version string. You can use it in
+;;;; command line as shown in [Synopsis](#synopsis); it can bump version
+;;;; of command line argument string, or version string contained in a file.
 ;;;; See an example usage [`./bump.bash`](./bump.bash).
+;;;;
 ;;;; It also can be used as a library to compose, decompose, or bump version
 ;;;; string. See [API documentation](#api-documentation) for more
 ;;;; details.
@@ -155,6 +161,20 @@ See `compose' for components' detail.
           (error (.. "invalid version component(s): "
                      (view {: major : minor : patch : prerelease : build})))))))
 
+(fn version? [x]
+  "If `x` is a version string, return `true`; otherwise return `false`.
+
+# Examples
+
+```fennel
+(assert (= true (version? \"1.2.3-dev+111\")))
+(assert (= false (version? \"pineapple\")))
+(assert (= false (version? {:major 1 :minor 2 :patch 3})))
+```"
+  (case (type x)
+    :string (pick-values 1 (pcall decompose x))
+    _ false))
+
 (fn bump/major [version]
   "Bump major version number in the `version` string.
 
@@ -236,13 +256,112 @@ other than patch number, compose it with any other `bump/*` function.
                (tset :patch (+ version.patch 1))
                (tset :prerelease prerelease)))))
 
+(fn find-versions [text]
+  "Return a table whose keys are all version strings found in the `text`.
+
+Values are all `true`.
+
+# Example
+
+```fennel
+(let [found (find-versions \"1.2.3 1.2.3+meta 1.2.3 1.2.3-dev+a2cae63\")]
+  (assert (= 3 (length (icollect [v _ (pairs found)] v))))
+  (assert (. found \"1.2.3\"))
+  (assert (. found \"1.2.3+meta\"))
+  (assert (. found \"1.2.3-dev+a2cae63\")))
+```"
+  (if (= :string (type text))
+      (let [release
+            "%d+%.%d+%.%d+%f[^%-%+%.%w]" ; frontier pattern: Lua 5.2+ / LuaJIT
+            release/label
+            "%d+%.%d+%.%d+[%-%+]%w[%-%+%.%w]*" ; forgiving matching
+            versions (collect [v (text:gmatch release)] v true)]
+        (collect [v (text:gmatch release/label) &into versions] v true))
+      (let [{: view} (require :fennel)]
+        (error "expected text string, got " (view text)))))
+
+(fn find-the-one-version [text]
+  "Find the one true version in the `text`.
+
+If not found, it returns `nil`.
+If multiple version strings are found, it raises error."
+  (let [versions (icollect [v (pairs (find-versions text))] v)]
+    (case (length versions)
+      0 nil
+      1 (. versions 1)
+      _ (let [{: view} (require :fennel)]
+          (error (.. "multiple versions found: " (view versions)))))))
+
+(fn warn/nil [...]
+  (io.stderr:write "bump.fnl: " ...)
+  (io.stderr:write "\n")
+  nil)
+
+(fn require-version [path]
+  (let [{: dofile} (require :fennel)]
+    (case (pcall dofile path)
+      (where (true x) (= :table (type x)))
+      (case (. x :version)
+        v (if (version? v) v
+              (let [{: view} (require :fennel)]
+                (warn/nil "invalid version " (view v) " in " path)))
+        _ (warn/nil "version not exported in " path))
+      _ (warn/nil "failed to require version from " path))))
+
+(fn read-version [path]
+  (warn/nil "attempt to read version from " path " as text file")
+  (case (io.open path)
+    in (with-open [in in]
+         (case (pcall find-the-one-version (in:read :*a))
+           (true v) (if (version? v) v
+                        (warn/nil "invalid version \"" v "\" in " path))
+           (_ msg) (warn/nil msg)))
+    (_ msg) (warn/nil msg)))
+
+(fn read-contents [path]
+  (case (io.open path)
+    in (with-open [in in] (in:read :*a))
+    (_ msg) (warn/nil msg)))
+
+(fn write-contents [text path]
+  (case (io.open path :w)
+    out (with-open [out out] (out:write text))
+    (_ msg) (warn/nil msg)))
+
+(fn escape-regex [s]
+  (s:gsub "([%^%$%(%)%%%.%[%]%*%+%-%?])" "%%%1"))
+
+(fn replace [old new text]
+  (string.gsub text (escape-regex old) new))
+
+(fn edit-file [path bump]
+  "Bump version in a file at the `path` by using `bump` function.
+
+First of all, it tries to detect the version declared in the file by
+using the following heuristics one by one:
+
+1. Require the file with `dofile` and see if it has `:version` entry.
+2. Read the file as text and search for one unique version string.
+
+After that, if any unique version is found, it bumps the version and
+replace the old version string with the new version in the file.
+
+It returns `true` in case of success and `nil` in failure."
+  (case-try (or (require-version path)
+                (read-version path))
+    version (read-contents path)
+    text (let [edited (replace version (bump version) text)]
+           (and (write-contents edited path) true))
+    (catch
+      _ (warn/nil "failed to edit " path))))
+
 (fn help []
   (io.stderr:write "USAGE: " (. arg 0) " --bump"
                    " [--major|-M]"
                    " [--minor|-m]"
                    " [--patch|-p]"
                    " [--dev|--alpha|--any-string]"
-                   " VERSION" "\n"))
+                   " VERSION|FILE" "\n"))
 
 (fn <<? [f ?g]
   (if ?g #(f (?g $)) f))
@@ -252,7 +371,7 @@ other than patch number, compose it with any other `bump/*` function.
     (help)
     (os.exit -1))
   (var bump nil)
-  (var version nil)
+  (var version|file nil)
   (each [_ arg (ipairs args)]
     (case arg
       :--major (set bump (<<? bump/major bump))
@@ -264,19 +383,25 @@ other than patch number, compose it with any other `bump/*` function.
       (where flag (flag:match "^%-%-[^%-]+.*"))
       (let [label (flag:match "^%-%-([^%-]+.*)")]
         (set bump (<<? #(bump/prerelease $ label) bump)))
-      version* (set version version*)))
-  (when (= nil version)
+      any (set version|file any)))
+  (when (= nil version|file)
     (help)
     (os.exit -1))
   (set bump (or bump bump/release))
-  (io.stdout:write (bump version) "\n")
-  (os.exit 0))
+  (if (version? version|file)
+      (let [version version|file]
+        (io.stdout:write (bump version) "\n")
+        (os.exit 0))
+      (let [file version|file
+            ok? (or (edit-file file bump) false)]
+        (os.exit ok?))))
 
 (when (= :--bump ...)
   (main (doto [...] (table.remove 1))))
 
 {: decompose
  : compose
+ : version?
  : bump/major
  : bump/minor
  : bump/patch
