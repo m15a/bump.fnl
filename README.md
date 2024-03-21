@@ -27,11 +27,17 @@ bump.fnl - a tiny helper for version bumping.
     $ ./bump.fnl --bump 1.2.3 --chain --minor --minor
     1.4.0-chain
 
+    $ ./bump.fnl --bump bump.fnl --major
+    $ grep 'local version' bump.fnl
+    (local version :2.0.0-dev)
+
 ## Description
 
-This is a [Fennel] script to bump version string in command line.
-You can use it in command line as shown in [Synopsis](#synopsis).
+This is a [Fennel] script to bump version string. You can use it in
+command line as shown in [Synopsis](#synopsis); it can bump version
+of command line argument string, or version string contained in a file.
 See an example usage [`./bump.bash`](./bump.bash).
+
 It also can be used as a library to compose, decompose, or bump version
 string. See [API documentation](#api-documentation) for more
 details.
@@ -50,6 +56,7 @@ details.
 - Function: [bump/release](#function-bumprelease)
 - Function: [compose](#function-compose)
 - Function: [decompose](#function-decompose)
+- Function: [version?](#function-version)
 
 ### Function: bump/major
 
@@ -186,6 +193,22 @@ See [`compose`](#function-compose) for components' detail.
 (let [(ok? msg) (pcall decompose "0.0.1+a+b")]
   (assert (and (= false ok?)
                (= "expected one build tag, found many: 0.0.1+a+b" msg))))
+```
+
+### Function: version?
+
+```fennel
+(version? x)
+```
+
+If `x` is a version string, return `true`; otherwise return `false`.
+
+#### Examples
+
+```fennel
+(assert (= true (version? "1.2.3-dev+111")))
+(assert (= false (version? "pineapple")))
+(assert (= false (version? {:major 1 :minor 2 :patch 3})))
 ```
 
 ---
