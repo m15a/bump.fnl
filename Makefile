@@ -1,3 +1,4 @@
+FNLDOC ?= fnldoc
 SRC := bump.fnl
 
 README.md: $(SRC:fnl=md)
@@ -5,4 +6,8 @@ README.md: $(SRC:fnl=md)
 	sed -Ei $@ -e 's@^(#+) (Function|Macro|Example)@\1# \2@'
 
 %.md: %.fnl
-	fnldoc $<
+	$(FNLDOC) $<
+
+.PHONY: test
+test: $(SRC)
+	$(FNLDOC) --mode check $<
