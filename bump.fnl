@@ -77,53 +77,83 @@
 
 See `compose' for components' detail.
 
-# Example
+# Examples
 
 ```fennel
 (let [decomposed (decompose \"0.1.0-dev\")]
   (assert (= 0 decomposed.major))
   (assert (= 1 decomposed.minor))
   (assert (= 0 decomposed.patch))
-  (assert (= :dev decomposed.label)))
+  (assert (= :dev decomposed.prerelease)))
+
+(let [decomposed (decompose \"0.1.0-dev-1+0.0.1\")]
+  (assert (= 0 decomposed.major))
+  (assert (= 1 decomposed.minor))
+  (assert (= 0 decomposed.patch))
+  (assert (= :dev-1 decomposed.prerelease))
+  (assert (= :0.0.1 decomposed.build)))
+
+(let [(ok? msg) (pcall decompose \"0.0.1+a+b\")]
+  (assert (and (= false ok?)
+               (= \"expected one build tag, found many: 0.0.1+a+b\" msg))))
 ```"
   (if (= :string (type version))
-      (let [version* {:major (tonumber (version:match "^%d+"))
-                      :minor (tonumber (version:match "^%d+%.(%d+)"))
-                      :patch (tonumber (version:match "^%d+%.%d+%.(%d+)"))
-                      :label (version:match "^%d+%.%d+%.%d+%-(.+)")}]
-        (if (and version*.major version*.minor version*.patch)
-            version*
+      (let [v {:major (tonumber (version:match "^%d+"))
+               :minor (tonumber (version:match "^%d+%.(%d+)"))
+               :patch (tonumber (version:match "^%d+%.%d+%.(%d+)"))
+               :prerelease (version:match "^%d+%.%d+%.%d+%-([%w][%-%.%w]*)")
+               :build
+               (or
+                 (version:match "^%d+%.%d+%.%d+%-[%w][%-%.%w]*%+([%w][%-%+%.%w]*)")
+                 (version:match "^%d+%.%d+%.%d+%+([%w][%-%+%.%w]*)"))}]
+        (if (and v.build (string.match v.build "%+"))
+            (error (.. "expected one build tag, found many: " version))
+            (and v.major v.minor v.patch)
+            v
             (error (.. "version missing some component(s): " version))))
       (let [{: view} (require :fennel)]
         (error (.. "version string expected, got " (view version))))))
 
-(fn compose [{: major : minor : patch : label}]
+(fn compose [{: major : minor : patch : prerelease : build}]
   "Compose version string from a table that contains:
 
 - `major`: major version,
 - `minor`: minor version,
 - `patch`: patch version, and
-- `label`: suffix label that implies pre-release version (optional).
+- `prerelease`: suffix label that implies pre-release version (optional).
+- `build`: suffix label that attaches build meta information (optional).
 
-# Example
+# Examples
 
 ```fennel
 (assert (= \"0.1.0-dev\"
-           (compose {:major 0 :minor 1 :patch 0 :label :dev})))
+           (compose {:major 0 :minor 1 :patch 0
+                     :prerelease :dev})))
+(assert (= \"0.1.0+rc1\"
+           (compose {:major 0 :minor 1 :patch 0
+                     :build :rc1})))
+(assert (= \"0.1.0-test-case+exp.1\"
+           (compose {:major 0 :minor 1 :patch 0
+                     :prerelease :test-case :build :exp.1})))
 ```"
   (let [major (tonumber major)
         minor (tonumber minor)
         patch (tonumber patch)
-        label* (when label (tostring label))]
+        prerelease* (when prerelease (tostring prerelease))
+        build* (when build (tostring build))]
     (if (and major minor patch
-             (or (= nil label) (= :string (type label*))))
-        (if label
-            (.. major "." minor "." patch "-" label*)
-            (.. major "." minor "." patch))
+             (or (= nil prerelease) (= :string (type prerelease*)))
+             (or (= nil build) (= :string (type build*))))
+        (if (and prerelease build)
+            (.. major "." minor "." patch "-" prerelease* "+" build*)
+            (and prerelease (not build))
+            (.. major "." minor "." patch "-" prerelease*)
+            (and (not prerelease) build)
+            (.. major "." minor "." patch "+" build*)
+            (.. major  "." minor "." patch))
         (let [{: view} (require :fennel)]
           (error (.. "invalid version component(s): "
-                     (view major) ", " (view minor) ", " (view patch) ", "
-                     (view label)))))))
+                     (view {: major : minor : patch : prerelease : build})))))))
 
 (fn bump/major [version]
   "Bump major version number in the `version` string.
@@ -165,19 +195,20 @@ See `compose' for components' detail.
                (tset :patch (+ version.patch 1))))))
 
 (fn bump/release [version]
-  "Strip pre-release label from the `version` string.
+  "Strip pre-release and/or build label(s) from the `version` string.
 
 # Example
 
 ```fennel
-(assert (= \"1.2.1\" (bump/release \"1.2.1-dev\")))
+(assert (= \"1.2.1\" (bump/release \"1.2.1-dev+001\")))
 ```"
   (let [version (decompose version)]
     (compose (doto version
-               (tset :label nil)))))
+               (tset :prerelease nil)
+               (tset :build nil)))))
 
-(fn bump/prerelease [version ?label]
-  "Append pre-release `?label` (default: `dev`) to the `version` string.
+(fn bump/prerelease [version ?prerelease]
+  "Append `?prerelease` label (default: `dev`) to the `version` string.
 
 Besides, it increments patch version number. If you like to increment
 other than patch number, compose it with any other `bump/*` function.
@@ -193,16 +224,17 @@ other than patch number, compose it with any other `bump/*` function.
                            bump/minor)))
 ```"
   (let [version (decompose version)
-        label (if ?label
-                  (let [{: view} (require :fennel)]
-                    (assert (and (= :string (type ?label))
-                                 (< 0 (length ?label)))
-                            (.. "invalid pre-release label: " (view ?label)))
-                    ?label)
-                  :dev)]
+        prerelease
+        (if ?prerelease
+            (let [{: view} (require :fennel)]
+              (assert (and (= :string (type ?prerelease))
+                           (< 0 (length ?prerelease)))
+                      (.. "invalid pre-release label: " (view ?prerelease)))
+              ?prerelease)
+            :dev)]
     (compose (doto version
                (tset :patch (+ version.patch 1))
-               (tset :label label)))))
+               (tset :prerelease prerelease)))))
 
 (fn help []
   (io.stderr:write "USAGE: " (. arg 0) " --bump"

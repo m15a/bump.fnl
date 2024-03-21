@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning][2].
 
 ## [0.3.0-dev] - ???
 
+### Changed
+
+- `compose` and `decompose`: `:label` entry has been replaced with
+  `:prerelease` and `:build` entries in favor of SemVer standard.
+
 ## [0.2.0] - 2024-03-21 +0900
 
 ### Added
