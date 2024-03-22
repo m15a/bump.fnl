@@ -47,7 +47,7 @@ and this project adheres to [Semantic Versioning][2].
 
 - Script to bump version string easily.
 
-[0.3.0-dev]: https://git.sr.ht/~m15a/bump.fnl/refs/HEAD
+[0.3.0]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.3.0
 [0.2.0]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.2.0
 [0.1.0]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.1.0
 
