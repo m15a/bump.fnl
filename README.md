@@ -34,15 +34,23 @@ bump.fnl - a tiny helper for version bumping.
 ## Description
 
 This is a [Fennel] script to bump version string. You can use it in
-command line as shown in [Synopsis](#synopsis); it can bump version
-of command line argument string, or version string contained in a file.
+command line as shown in [Synopsis](#synopsis): it can bump command line
+argument version string, or version string contained in a file.
 See an example usage [`./bump.bash`](./bump.bash).
 
-It also can be used as a library to compose, decompose, or bump version
-string. See [API documentation](#api-documentation) for more
-details.
+It is also a library for general-purpose [SemVer] version string
+manipulation. It provides functions to
+
+- compose and decompose version string from/to table containing
+  major, minor, patch numbers, prerelease label, and build meta tag;
+- compare and query version strings;
+- bump version string; and
+- parse text to search for version strings.
+
+See [API documentation](#api-documentation) for more details.
 
 [Fennel]: https://fennel-lang.org/
+[SemVer]: https://semver.org/
 
 
 ## API documentation
