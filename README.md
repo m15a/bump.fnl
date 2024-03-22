@@ -58,6 +58,8 @@ details.
 - Function: [decompose](#function-decompose)
 - Function: [gparse](#function-gparse)
 - Function: [parse](#function-parse)
+- Function: [prerelease?](#function-prerelease)
+- Function: [release?](#function-release)
 - Function: [version<](#function-version)
 - Function: [version<=](#function-version-1)
 - Function: [version<>](#function-version-1)
@@ -241,6 +243,38 @@ Optional `?init` specifies where to start the search (default: 1).
 ```fennel
 (assert (= "1.0.0-alpha" (parse " v1.0.0 1.0.0-alpha 1.0.1")))
 (assert (= "2.0.0" (parse "1.0.0 2.0.0" 2)))
+```
+
+### Function: prerelease?
+
+```fennel
+(prerelease? x)
+```
+
+If `x` is a prerelease version string, return `true`; otherwise `false`.
+
+#### Examples
+
+```fennel
+(assert (= false (prerelease? :1.0.0.0)))
+(assert (= true (prerelease? "1.0.0-alpha")))
+(assert (= false (prerelease? "1.0.0+sha.a1bf00a")))
+```
+
+### Function: release?
+
+```fennel
+(release? x)
+```
+
+If `x` is a release version string, return `true`; otherwise `false`.
+
+#### Examples
+
+```fennel
+(assert (= false (release? :1.0.0+a+b)))
+(assert (= false (release? "1.0.0-alpha")))
+(assert (= true (release? "1.0.0+sha.a1bf00a")))
 ```
 
 ### Function: version<
