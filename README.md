@@ -56,6 +56,8 @@ details.
 - Function: [bump/release](#function-bumprelease)
 - Function: [compose](#function-compose)
 - Function: [decompose](#function-decompose)
+- Function: [gparse](#function-gparse)
+- Function: [parse](#function-parse)
 - Function: [version<](#function-version)
 - Function: [version<=](#function-version-1)
 - Function: [version<>](#function-version-1)
@@ -203,6 +205,42 @@ See [`compose`](#function-compose) for components' detail.
 (let [(ok? msg) (pcall decompose "0.0.1=dev")]
   (assert (and (= false ok?)
                (= "invalid pre-release label and/or build tag: 0.0.1=dev" msg))))
+```
+
+### Function: gparse
+
+```fennel
+(gparse text)
+```
+
+Return an iterator that returns version strings in the `text` one by one.
+
+#### Example
+
+```fennel
+(let [found (collect [v (gparse "4.5.6.7 1.2.3+m 4.3.2a 1.2.3 1.2.3-dev+a2")]
+              (values v true))]
+  (assert (= 3 (length (icollect [v _ (pairs found)] v))))
+  (assert (. found "1.2.3"))
+  (assert (. found "1.2.3+m"))
+  (assert (. found "1.2.3-dev+a2")))
+```
+
+### Function: parse
+
+```fennel
+(parse text ?init)
+```
+
+Return the first version string found in the `text`.
+
+Optional `?init` specifies where to start the search (default: 1).
+
+#### Example
+
+```fennel
+(assert (= "1.0.0-alpha" (parse " v1.0.0 1.0.0-alpha 1.0.1")))
+(assert (= "2.0.0" (parse "1.0.0 2.0.0" 2)))
 ```
 
 ### Function: version<

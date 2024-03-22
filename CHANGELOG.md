@@ -21,9 +21,11 @@ and this project adheres to [Semantic Versioning][2].
 
 - Support to bump version string in Fennel script file [#4]
 - Version comparators conforming to SemVer [db7828b]
+- Functions `parse` and `gparse` to find version(s) in string [01efb5c]
 
 [#4]: https://todo.sr.ht/~m15a/bump.fnl/4
 [db7828b]: https://git.sr.ht/~m15a/bump.fnl/commit/db7828b
+[01efb5c]: https://git.sr.ht/~m15a/bump.fnl/commit/01efb5c
 
 ## [0.2.0] - 2024-03-21 +0900
 
