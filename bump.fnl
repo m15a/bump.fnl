@@ -193,6 +193,95 @@ See `compose' for components' detail.
     :string (pick-values 1 (pcall decompose x))
     _ false))
 
+(fn prerelease< [left right]
+  "Return `true` if `left` pre-release label is older than `right`.
+
+Otherwise return `false`. This is very complicated.
+See [SemVer spec](https://semver.org/#spec-item-11)."
+  (let [left-ids (icollect [id (left:gmatch "[^%.]+")] id)
+        right-ids (icollect [id (right:gmatch "[^%.]+")] id)
+        n (math.min (length left-ids) (length right-ids))]
+    (var answer nil)
+    (for [i 1 n &until (not= nil answer)]
+      (let [lid (. left-ids i) rid (. right-ids i)]
+        (case (values (tonumber lid) (tonumber rid))
+          (m n) (if (< m n) (set answer true)
+                    (> m n) (set answer false))
+          (m ?n) (set answer true)
+          (?m m) (set answer false)
+          _ (if (< lid rid) (set answer true)
+                (> lid rid) (set answer false)))))
+    (if (not= nil answer)
+        answer
+        (if (. left-ids (+ n 1)) false
+            (. right-ids (+ n 1)) true
+            false))))
+
+(fn version< [left right]
+  "Return `true` if `left` version is older than `right`; otherwise `false`.
+
+# Examples
+
+```fennel
+(assert (= true (version< :1.0.0-alpha :1.0.0-alpha.1)))
+(assert (= true (version< :1.0.0-alpha.1 :1.0.0-alpha.beta)))
+(assert (= true (version< :1.0.0-alpha.beta :1.0.0-beta)))
+(assert (= true (version< :1.0.0-beta.2 :1.0.0-beta.11)))
+(assert (= true (version< :1.0.0-beta.11 :1.0.0-rc.1)))
+(assert (= true (version< :1.0.0-rc.1 :1.0.0)))
+```"
+  (let [left (decompose left)
+        right (decompose right)]
+    (if (< left.major right.major) true
+        (> left.major right.major) false
+        (if (< left.minor right.minor) true
+            (> left.minor right.minor) false
+            (if (< left.patch right.patch) true
+                (> left.patch right.patch) false
+                (if (and left.prerelease (not right.prerelease)) true
+                    (not left.prerelease) false
+                    (prerelease< left.prerelease right.prerelease)))))))
+
+(fn version<= [left right]
+  "Return `true` if `left` version is older than or equal to `right`.
+
+Otherwise `false`."
+  (or (version< left right) (not (version< right left))))
+
+(fn version> [left right]
+  "Return `true` if `left` version is newer than `right`; otherwise `false`."
+  (version< right left))
+
+(fn version>= [left right]
+  "Return `true` if `left` version is newer than or equal to `right`.
+
+Otherwise `false`."
+  (or (version< right left) (not (version< left right))))
+
+(fn version<> [left right]
+  "Return `true` if `left` and `right` versions have different precedence.
+
+Otherwise `false`. Note that build tags are ignored for version comparison.
+
+# Example
+
+```fennel
+(assert (= false (version<> :1.0.0-alpha+001 :1.0.0-alpha+100)))
+```"
+  (or (version< left right) (version< right left)))
+
+(fn version= [left right]
+  "Return `true` if `left` and `right` versions have the same precedence.
+
+Otherwise `false`. Note that build tags are ignored for version comparison.
+
+# Example
+
+```fennel
+(assert (= true (version= :1.0.0-alpha+001 :1.0.0-alpha+010)))
+```"
+  (not (or (version< left right) (version< right left))))
+
 (fn bump/major [version]
   "Bump major version number in the `version` string.
 
@@ -411,6 +500,12 @@ It returns `true` in case of success and `nil` in failure."
 {: decompose
  : compose
  : version?
+ : version=
+ : version<>
+ : version<
+ : version<=
+ : version>
+ : version>=
  : bump/major
  : bump/minor
  : bump/patch
