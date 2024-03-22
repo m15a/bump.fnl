@@ -211,11 +211,9 @@ See [SemVer spec](https://semver.org/#spec-item-11)."
           (?m n) (set answer false)
           _ (if (< lid rid) (set answer true)
                 (> lid rid) (set answer false)))))
-    (if (not= nil answer)
-        answer
-        (if (. left-ids (+ n 1)) false
-            (. right-ids (+ n 1)) true
-            false))))
+    (if (not= nil answer) answer
+        (. right-ids (+ n 1)) true
+        false)))
 
 (fn version< [left right]
   "Return `true` if `left` version is older than `right`; otherwise `false`.
@@ -234,13 +232,13 @@ See [SemVer spec](https://semver.org/#spec-item-11)."
         right (decompose right)]
     (if (< left.major right.major) true
         (> left.major right.major) false
-        (if (< left.minor right.minor) true
-            (> left.minor right.minor) false
-            (if (< left.patch right.patch) true
-                (> left.patch right.patch) false
-                (if (and left.prerelease (not right.prerelease)) true
-                    (not left.prerelease) false
-                    (prerelease< left.prerelease right.prerelease)))))))
+        (< left.minor right.minor) true
+        (> left.minor right.minor) false
+        (< left.patch right.patch) true
+        (> left.patch right.patch) false
+        (and left.prerelease (not right.prerelease)) true
+        (not left.prerelease) false
+        (prerelease< left.prerelease right.prerelease))))
 
 (fn version<= [left right]
   "Return `true` if `left` version is older than or equal to `right`.
