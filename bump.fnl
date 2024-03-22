@@ -372,15 +372,15 @@ It returns `true` in case of success and `nil` in failure."
                    " [--minor|-m]"
                    " [--patch|-p]"
                    " [--dev|--alpha|--any-string]"
-                   " VERSION|FILE" "\n"))
+                   " VERSION|FILE" "\n")
+  (os.exit false))
 
 (fn <<? [f ?g]
   (if ?g #(f (?g $)) f))
 
 (fn main [args]
   (when (= nil (. args 1))
-    (help)
-    (os.exit -1))
+    (help))
   (var bump nil)
   (var version|file nil)
   (each [_ arg (ipairs args)]
@@ -396,13 +396,12 @@ It returns `true` in case of success and `nil` in failure."
         (set bump (<<? #(bump/prerelease $ label) bump)))
       any (set version|file any)))
   (when (= nil version|file)
-    (help)
-    (os.exit -1))
+    (help))
   (set bump (or bump bump/release))
   (if (version? version|file)
       (let [version version|file]
         (io.stdout:write (bump version) "\n")
-        (os.exit 0))
+        (os.exit))
       (let [file version|file
             ok? (or (edit-file file bump) false)]
         (os.exit ok?))))
