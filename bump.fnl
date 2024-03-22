@@ -359,35 +359,58 @@ other than patch number, compose it with any other `bump/*` function.
                (tset :patch (+ version.patch 1))
                (tset :prerelease prerelease)))))
 
-(fn find-all [text]
-  "Return a table whose keys are all version strings found in the `text`.
+(fn parse [text ?init]
+  "Return the first version string found in the `text`.
 
-Values are all `true`.
+Optional `?init` specifies where to start the search (default: 1).
 
 # Example
 
 ```fennel
-(let [found (find-all \"1.2.3 1.2.3+meta 1.2.3 1.2.3-dev+a2cae63\")]
-  (assert (= 3 (length (icollect [v _ (pairs found)] v))))
-  (assert (. found \"1.2.3\"))
-  (assert (. found \"1.2.3+meta\"))
-  (assert (. found \"1.2.3-dev+a2cae63\")))
+(assert (= \"1.0.0-alpha\" (parse \" v1.0.0 1.0.0-alpha 1.0.1\")))
+(assert (= \"2.0.0\" (parse \"1.0.0 2.0.0\" 2)))
 ```"
   (when (not= :string (type text))
     (error "expected text string, got " (view text)))
-  (let [release
-        "%d+%.%d+%.%d+%f[^%-%+%.%w]" ; frontier pattern: Lua 5.2+ / LuaJIT
-        release/label
-        "%d+%.%d+%.%d+[%-%+]%w[%-%+%.%w]*" ; forgiving matching
-        versions (collect [v (text:gmatch release)] v true)]
-    (collect [v (text:gmatch release/label) &into versions] v true)))
+  (var found nil)
+  (let [text (if (= nil ?init)
+                 text
+                 (= :number (type ?init))
+                 (text:sub ?init)
+                 (error "expected number, got " (view ?init)))]
+    (each [v (text:gmatch "[%w%-%+%.]+") &until found]
+      (when (version? v)
+        (set found v))))
+  found)
+
+(fn gparse [text]
+  "Return an iterator that returns version strings in the `text` one by one.
+
+# Example
+
+```fennel
+(let [found (collect [v (gparse \"4.5.6.7 1.2.3+m 4.3.2a 1.2.3 1.2.3-dev+a2\")]
+              (values v true))]
+  (assert (= 3 (length (icollect [v _ (pairs found)] v))))
+  (assert (. found \"1.2.3\"))
+  (assert (. found \"1.2.3+m\"))
+  (assert (. found \"1.2.3-dev+a2\")))
+```"
+  (when (not= :string (type text))
+    (error "expected text string, got " (view text)))
+  (let [fetch (text:gmatch "[%w%-%+%.]+")]
+    (fn loop []
+      (case (fetch)
+        v (if (version? v) v (loop))
+        _ nil))
+    loop))
 
 (fn find-one [text]
   "Find the one true version in the `text`.
 
 If not found, it returns `nil`.
 If multiple version strings are found, it raises error."
-  (let [versions (icollect [v (pairs (find-all text))] v)]
+  (let [versions (icollect [v (pairs (collect [v (gparse text)] v true))] v)]
     (case (length versions)
       0 nil
       1 (. versions 1)
@@ -511,6 +534,8 @@ It returns `true` in case of success and `nil` in failure."
  : bump/patch
  : bump/release
  : bump/prerelease
+ : parse
+ : gparse
  : version}
 
 ;; vim: tw=80 spell
