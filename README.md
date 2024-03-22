@@ -56,7 +56,13 @@ details.
 - Function: [bump/release](#function-bumprelease)
 - Function: [compose](#function-compose)
 - Function: [decompose](#function-decompose)
-- Function: [version?](#function-version)
+- Function: [version<](#function-version)
+- Function: [version<=](#function-version-1)
+- Function: [version<>](#function-version-1)
+- Function: [version=](#function-version-1)
+- Function: [version>](#function-version-1)
+- Function: [version>=](#function-version-1)
+- Function: [version?](#function-version-1)
 
 ### Function: bump/major
 
@@ -198,6 +204,85 @@ See [`compose`](#function-compose) for components' detail.
   (assert (and (= false ok?)
                (= "invalid pre-release label and/or build tag: 0.0.1=dev" msg))))
 ```
+
+### Function: version<
+
+```fennel
+(version< left right)
+```
+
+Return `true` if `left` version is older than `right`; otherwise `false`.
+
+#### Examples
+
+```fennel
+(assert (= true (version< :1.0.0-alpha :1.0.0-alpha.1)))
+(assert (= true (version< :1.0.0-alpha.1 :1.0.0-alpha.beta)))
+(assert (= true (version< :1.0.0-alpha.beta :1.0.0-beta)))
+(assert (= true (version< :1.0.0-beta.2 :1.0.0-beta.11)))
+(assert (= true (version< :1.0.0-beta.11 :1.0.0-rc.1)))
+(assert (= true (version< :1.0.0-rc.1 :1.0.0)))
+```
+
+### Function: version<=
+
+```fennel
+(version<= left right)
+```
+
+Return `true` if `left` version is older than or equal to `right`.
+
+Otherwise `false`.
+
+### Function: version<>
+
+```fennel
+(version<> left right)
+```
+
+Return `true` if `left` and `right` versions have different precedence.
+
+Otherwise `false`. Note that build tags are ignored for version comparison.
+
+#### Example
+
+```fennel
+(assert (= false (version<> :1.0.0-alpha+001 :1.0.0-alpha+100)))
+```
+
+### Function: version=
+
+```fennel
+(version= left right)
+```
+
+Return `true` if `left` and `right` versions have the same precedence.
+
+Otherwise `false`. Note that build tags are ignored for version comparison.
+
+#### Example
+
+```fennel
+(assert (= true (version= :1.0.0-alpha+001 :1.0.0-alpha+010)))
+```
+
+### Function: version>
+
+```fennel
+(version> left right)
+```
+
+Return `true` if `left` version is newer than `right`; otherwise `false`.
+
+### Function: version>=
+
+```fennel
+(version>= left right)
+```
+
+Return `true` if `left` version is newer than or equal to `right`.
+
+Otherwise `false`.
 
 ### Function: version?
 
