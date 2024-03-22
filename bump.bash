@@ -43,11 +43,11 @@ if is_prerelease "$CURRENT_VERSION"
 then
     sed -Ei CHANGELOG.md \
         -e "s@^## \[$CURRENT_VERSION] - \?\?\?@## [$NEXT_VERSION] - $NEXT_DATE@" \
-        -e "s@^\[$CURRENT_VERSION]: <(.+)$CURRENT_REF>@[$NEXT_VERSION]: <\1$NEXT_REF>@"
+        -e "s@^\[$CURRENT_VERSION]: (.+)$CURRENT_REF@[$NEXT_VERSION]: \1$NEXT_REF@"
 else
     sed -Ei CHANGELOG.md \
         -e "s@^(\[2]: .*)@\1\n\n## [$NEXT_VERSION] - $NEXT_DATE@" \
-        -e "s@^(\[$CURRENT_VERSION]: <(.+)$CURRENT_REF>)@[$NEXT_VERSION]: <\2$NEXT_REF>\n\1@"
+        -e "s@^(\[$CURRENT_VERSION]: (.+)$CURRENT_REF)@[$NEXT_VERSION]: \2$NEXT_REF\n\1@"
 fi
 
 make
