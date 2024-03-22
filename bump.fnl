@@ -223,10 +223,9 @@ See `compose' for components' detail.
 ```fennel
 (assert (= \"1.2.1\" (bump/release \"1.2.1-dev+001\")))
 ```"
-  (let [version (decompose version)]
-    (compose (doto version
-               (tset :prerelease nil)
-               (tset :build nil)))))
+  (compose (doto (decompose version)
+             (tset :prerelease nil)
+             (tset :build nil))))
 
 (fn bump/prerelease [version ?prerelease]
   "Append `?prerelease` label (default: `dev`) to the `version` string.
@@ -245,17 +244,15 @@ other than patch number, compose it with any other `bump/*` function.
                            bump/minor)))
 ```"
   (let [version (decompose version)
-        prerelease
-        (if ?prerelease
-            (let [{: view} (require :fennel)]
-              (assert (and (= :string (type ?prerelease))
-                           (< 0 (length ?prerelease)))
-                      (.. "invalid pre-release label: " (view ?prerelease)))
-              ?prerelease)
-            :dev)]
-    (compose (doto version
-               (tset :patch (+ version.patch 1))
-               (tset :prerelease prerelease)))))
+        prerelease (if (= nil ?prerelease)
+                       :dev
+                       (tostring ?prerelease))]
+    (if (and prerelease (< 0 (length prerelease)))
+        (compose (doto version
+                   (tset :patch (+ version.patch 1))
+                   (tset :prerelease prerelease)))
+        (let [{: view} (require :fennel)]
+          (error (.. "invalid pre-release label: " (view ?prerelease)))))))
 
 (fn find-versions [text]
   "Return a table whose keys are all version strings found in the `text`.
