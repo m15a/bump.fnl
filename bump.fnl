@@ -208,7 +208,7 @@ See [SemVer spec](https://semver.org/#spec-item-11)."
           (m n) (if (< m n) (set answer true)
                     (> m n) (set answer false))
           (m ?n) (set answer true)
-          (?m m) (set answer false)
+          (?m n) (set answer false)
           _ (if (< lid rid) (set answer true)
                 (> lid rid) (set answer false)))))
     (if (not= nil answer)
