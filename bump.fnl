@@ -102,6 +102,10 @@ See `compose' for components' detail.
 (let [(ok? msg) (pcall decompose \"0.0.1+a+b\")]
   (assert (and (= false ok?)
                (= \"expected one build tag, found many: 0.0.1+a+b\" msg))))
+
+(let [(ok? msg) (pcall decompose \"0.0.1=dev\")]
+  (assert (and (= false ok?)
+               (= \"invalid pre-release label and/or build tag: 0.0.1=dev\" msg))))
 ```"
   (if (= :string (type version))
       (let [v {:major (tonumber (version:match "^%d+"))
@@ -111,8 +115,21 @@ See `compose' for components' detail.
                :build
                (or
                  (version:match "^%d+%.%d+%.%d+%-[%w][%-%.%w]*%+([%w][%-%+%.%w]*)")
-                 (version:match "^%d+%.%d+%.%d+%+([%w][%-%+%.%w]*)"))}]
-        (if (and v.build (string.match v.build "%+"))
+                 (version:match "^%d+%.%d+%.%d+%+([%w][%-%+%.%w]*)"))}
+            label (let [rest (version:match "^%d+%.%d+%.%d+(.*)$")]
+                    (if (= "" rest) nil rest))]
+        (if (and label (not v.prerelease) (not v.build))
+            (error (.. "invalid pre-release label and/or build tag: " version))
+            (and label v.prerelease v.build
+                 (not= label (.. "-" v.prerelease "+" v.build)))
+            (error (.. "invalid pre-release label and/or build tag: " version))
+            (and label v.prerelease (not v.build)
+                 (not= label (.. "-" v.prerelease)))
+            (error (.. "invalid pre-release label: " version))
+            (and label (not v.prerelease) v.build
+                 (not= label (.. "+" v.build)))
+            (error (.. "invalid build tag: " version))
+            (and v.build (string.match v.build "%+"))
             (error (.. "expected one build tag, found many: " version))
             (and v.major v.minor v.patch)
             v
