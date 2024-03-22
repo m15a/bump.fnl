@@ -441,16 +441,16 @@ Optional `?init` specifies where to start the search (default: 1).
         _ nil))
     loop))
 
-(fn find-one [text]
+(fn parse/one [text]
   "Find the one true version in the `text`.
 
-If not found, it returns `nil`.
-If multiple version strings are found, it raises error."
-  (let [versions (icollect [v (pairs (collect [v (gparse text)] v true))] v)]
-    (case (length versions)
-      0 nil
-      1 (. versions 1)
-      _ (error (.. "multiple versions found: " (view versions))))))
+If not found or multiple versions found, it raises error."
+  (let [versions (collect [v (gparse text)] v true)]
+    (case (next versions)
+      v (case (next versions v)
+          u (error (.. "multiple version strings found, at least " v " and " u))
+          _ v)
+      _ (error "no version string found"))))
 
 (fn warn/nil [...]
   (io.stderr:write "bump.fnl: " ...)
@@ -470,7 +470,7 @@ If multiple version strings are found, it raises error."
   (warn/nil "attempt to read version from " path " as text file")
   (case (io.open path)
     in (with-open [in in]
-         (case (pcall find-one (in:read :*a))
+         (case (pcall parse/one (in:read :*a))
            (true v) (if (version? v) v
                         (warn/nil "invalid version \"" v "\" in " path))
            (_ msg) (warn/nil msg)))
