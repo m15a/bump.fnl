@@ -13,13 +13,13 @@ and this project adheres to [Semantic Versioning][2].
 ### Changed
 
 - `compose` and `decompose`: `:label` entry has been replaced with
-  `:prerelease` and `:build` entries in favor of SemVer standard [[#5]].
+  `:prerelease` and `:build` entries in favor of SemVer standard [#5].
 
 [#5]: <https://todo.sr.ht/~m15a/bump.fnl/5>
 
 ### Added
 
-- Support to bump version string in Fennel script file [[#4]]
+- Support to bump version string in Fennel script file [#4]
 - Version comparators conforming to SemVer [db7828b]
 
 [#4]: <https://todo.sr.ht/~m15a/bump.fnl/4>
@@ -29,8 +29,8 @@ and this project adheres to [Semantic Versioning][2].
 
 ### Added
 
-- Chained version bumping via command line options [[#3]]
-- `--ANYLABEL` option to bump to pre-release version [[#1]]:
+- Chained version bumping via command line options [#3]
+- `--ANYLABEL` option to bump to pre-release version [#1]:
   `ANYLABEL` can be `dev`, `alpha`, or `anything`, which will be
   appended with prefix `-` after patch number.
 
