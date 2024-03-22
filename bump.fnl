@@ -531,8 +531,6 @@ It returns `true` in case of success and `nil` in failure."
   (if ?g #(f (?g $)) f))
 
 (fn main [args]
-  (when (= nil (. args 1))
-    (help))
   (var bump nil)
   (var version|file nil)
   (each [_ arg (ipairs args)]
@@ -547,7 +545,7 @@ It returns `true` in case of success and `nil` in failure."
       (let [label (flag:match "^%-%-([^%-]+.*)")]
         (set bump (<<? #(bump/prerelease $ label) bump)))
       any (set version|file any)))
-  (when (= nil version|file)
+  (when (not version|file)
     (help))
   (set bump (or bump bump/release))
   (if (version? version|file)
