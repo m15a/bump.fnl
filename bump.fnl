@@ -78,6 +78,8 @@
 
 (local version :0.3.0-dev)
 
+(local {: view} (require :fennel))
+
 (fn decompose [version]
   "Decompose `version` string to a table containing its components.
 
@@ -107,35 +109,34 @@ See `compose' for components' detail.
   (assert (and (= false ok?)
                (= \"invalid pre-release label and/or build tag: 0.0.1=dev\" msg))))
 ```"
-  (if (= :string (type version))
-      (let [v {:major (tonumber (version:match "^%d+"))
-               :minor (tonumber (version:match "^%d+%.(%d+)"))
-               :patch (tonumber (version:match "^%d+%.%d+%.(%d+)"))
-               :prerelease (version:match "^%d+%.%d+%.%d+%-([%w][%-%.%w]*)")
-               :build
-               (or
-                 (version:match "^%d+%.%d+%.%d+%-[%w][%-%.%w]*%+([%w][%-%+%.%w]*)")
-                 (version:match "^%d+%.%d+%.%d+%+([%w][%-%+%.%w]*)"))}
-            label (let [rest (version:match "^%d+%.%d+%.%d+(.*)$")]
-                    (if (= "" rest) nil rest))]
-        (if (and label (not v.prerelease) (not v.build))
-            (error (.. "invalid pre-release label and/or build tag: " version))
-            (and label v.prerelease v.build
-                 (not= label (.. "-" v.prerelease "+" v.build)))
-            (error (.. "invalid pre-release label and/or build tag: " version))
-            (and label v.prerelease (not v.build)
-                 (not= label (.. "-" v.prerelease)))
-            (error (.. "invalid pre-release label: " version))
-            (and label (not v.prerelease) v.build
-                 (not= label (.. "+" v.build)))
-            (error (.. "invalid build tag: " version))
-            (and v.build (string.match v.build "%+"))
-            (error (.. "expected one build tag, found many: " version))
-            (and v.major v.minor v.patch)
-            v
-            (error (.. "version missing some component(s): " version))))
-      (let [{: view} (require :fennel)]
-        (error (.. "version string expected, got " (view version))))))
+  (when (not= :string (type version))
+    (error (.. "version string expected, got " (view version))))
+  (let [v {:major (tonumber (version:match "^%d+"))
+           :minor (tonumber (version:match "^%d+%.(%d+)"))
+           :patch (tonumber (version:match "^%d+%.%d+%.(%d+)"))
+           :prerelease (version:match "^%d+%.%d+%.%d+%-([%w][%-%.%w]*)")
+           :build
+           (or
+             (version:match "^%d+%.%d+%.%d+%-[%w][%-%.%w]*%+([%w][%-%+%.%w]*)")
+             (version:match "^%d+%.%d+%.%d+%+([%w][%-%+%.%w]*)"))}
+        label (let [rest (version:match "^%d+%.%d+%.%d+(.*)$")]
+                (if (= "" rest) nil rest))]
+    (if (and label (not v.prerelease) (not v.build))
+        (error (.. "invalid pre-release label and/or build tag: " version))
+        (and label v.prerelease v.build
+             (not= label (.. "-" v.prerelease "+" v.build)))
+        (error (.. "invalid pre-release label and/or build tag: " version))
+        (and label v.prerelease (not v.build)
+             (not= label (.. "-" v.prerelease)))
+        (error (.. "invalid pre-release label: " version))
+        (and label (not v.prerelease) v.build
+             (not= label (.. "+" v.build)))
+        (error (.. "invalid build tag: " version))
+        (and v.build (string.match v.build "%+"))
+        (error (.. "expected one build tag, found many: " version))
+        (and v.major v.minor v.patch)
+        v
+        (error (.. "version missing some component(s): " version)))))
 
 (fn compose [{: major : minor : patch : prerelease : build}]
   "Compose version string from a table that contains:
@@ -164,20 +165,19 @@ See `compose' for components' detail.
         patch* (tonumber patch)
         prerelease* (when (not= nil prerelease) (tostring prerelease))
         build* (when (not= nil build) (tostring build))]
-    (if (and major* minor* patch*
-             (or (= nil prerelease) prerelease*)
-             (or (= nil build) build*))
-        (let [version-core (.. major* "." minor* "." patch*)]
-          (if (and prerelease* build*)
-              (.. version-core "-" prerelease* "+" build*)
-              prerelease*
-              (.. version-core "-" prerelease*)
-              build*
-              (.. version-core "+" build*)
-              version-core))
-        (let [{: view} (require :fennel)]
-          (error (.. "invalid version component(s): "
-                     (view {: major : minor : patch : prerelease : build})))))))
+    (when (not (and major* minor* patch*
+                    (or (= nil prerelease) prerelease*)
+                    (or (= nil build) build*)))
+      (error (.. "invalid version component(s): "
+                 (view {: major : minor : patch : prerelease : build}))))
+    (let [version-core (.. major* "." minor* "." patch*)]
+      (if (and prerelease* build*)
+          (.. version-core "-" prerelease* "+" build*)
+          prerelease*
+          (.. version-core "-" prerelease*)
+          build*
+          (.. version-core "+" build*)
+          version-core))))
 
 (fn version? [x]
   "If `x` is a version string, return `true`; otherwise return `false`.
@@ -264,12 +264,11 @@ other than patch number, compose it with any other `bump/*` function.
         prerelease (if (= nil ?prerelease)
                        :dev
                        (tostring ?prerelease))]
-    (if (and prerelease (< 0 (length prerelease)))
-        (compose (doto version
-                   (tset :patch (+ version.patch 1))
-                   (tset :prerelease prerelease)))
-        (let [{: view} (require :fennel)]
-          (error (.. "invalid pre-release label: " (view ?prerelease)))))))
+    (when (not (and prerelease (< 0 (length prerelease))))
+      (error (.. "invalid pre-release label: " (view ?prerelease))))
+    (compose (doto version
+               (tset :patch (+ version.patch 1))
+               (tset :prerelease prerelease)))))
 
 (fn find-versions [text]
   "Return a table whose keys are all version strings found in the `text`.
@@ -285,15 +284,14 @@ Values are all `true`.
   (assert (. found \"1.2.3+meta\"))
   (assert (. found \"1.2.3-dev+a2cae63\")))
 ```"
-  (if (= :string (type text))
-      (let [release
-            "%d+%.%d+%.%d+%f[^%-%+%.%w]" ; frontier pattern: Lua 5.2+ / LuaJIT
-            release/label
-            "%d+%.%d+%.%d+[%-%+]%w[%-%+%.%w]*" ; forgiving matching
-            versions (collect [v (text:gmatch release)] v true)]
-        (collect [v (text:gmatch release/label) &into versions] v true))
-      (let [{: view} (require :fennel)]
-        (error "expected text string, got " (view text)))))
+  (when (not= :string (type text))
+    (error "expected text string, got " (view text)))
+  (let [release
+        "%d+%.%d+%.%d+%f[^%-%+%.%w]" ; frontier pattern: Lua 5.2+ / LuaJIT
+        release/label
+        "%d+%.%d+%.%d+[%-%+]%w[%-%+%.%w]*" ; forgiving matching
+        versions (collect [v (text:gmatch release)] v true)]
+    (collect [v (text:gmatch release/label) &into versions] v true)))
 
 (fn find-the-one-version [text]
   "Find the one true version in the `text`.
@@ -304,8 +302,7 @@ If multiple version strings are found, it raises error."
     (case (length versions)
       0 nil
       1 (. versions 1)
-      _ (let [{: view} (require :fennel)]
-          (error (.. "multiple versions found: " (view versions)))))))
+      _ (error (.. "multiple versions found: " (view versions))))))
 
 (fn warn/nil [...]
   (io.stderr:write "bump.fnl: " ...)
@@ -318,8 +315,7 @@ If multiple version strings are found, it raises error."
       (where (true x) (= :table (type x)))
       (case (. x :version)
         v (if (version? v) v
-              (let [{: view} (require :fennel)]
-                (warn/nil "invalid version " (view v) " in " path)))
+              (warn/nil "invalid version " (view v) " in " path))
         _ (warn/nil "version not exported in " path))
       _ (warn/nil "failed to require version from " path))))
 
