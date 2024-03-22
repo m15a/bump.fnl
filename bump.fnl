@@ -193,6 +193,36 @@ See `compose' for components' detail.
     :string (pick-values 1 (pcall decompose x))
     _ false))
 
+(fn release? [x]
+  "If `x` is a release version string, return `true`; otherwise `false`.
+
+# Examples
+
+```fennel
+(assert (= false (release? :1.0.0+a+b)))
+(assert (= false (release? \"1.0.0-alpha\")))
+(assert (= true (release? \"1.0.0+sha.a1bf00a\")))
+```"
+  (case-try (type x)
+    :string (pcall decompose x)
+    (true v) (if v.prerelease false true)
+    (catch _ false)))
+
+(fn prerelease? [x]
+  "If `x` is a prerelease version string, return `true`; otherwise `false`.
+
+# Examples
+
+```fennel
+(assert (= false (prerelease? :1.0.0.0)))
+(assert (= true (prerelease? \"1.0.0-alpha\")))
+(assert (= false (prerelease? \"1.0.0+sha.a1bf00a\")))
+```"
+  (case-try (type x)
+    :string (pcall decompose x)
+    (true v) (if v.prerelease true false)
+    (catch _ false)))
+
 (fn prerelease< [left right]
   "Return `true` if `left` pre-release label is older than `right`.
 
@@ -521,6 +551,8 @@ It returns `true` in case of success and `nil` in failure."
 {: decompose
  : compose
  : version?
+ : release?
+ : prerelease?
  : version=
  : version<>
  : version<
