@@ -84,7 +84,7 @@
 
 ;;;; ## API documentation
 
-(local version :0.3.1)
+(local version :0.4.0-dev)
 
 (local {: view : dofile} (require :fennel))
 
