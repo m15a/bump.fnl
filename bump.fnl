@@ -3,6 +3,11 @@
 ;;;; bump.fnl - a tiny helper for version bumping.
 ;;;;
 ;;;; <https://sr.ht/~m15a/bump.fnl>
+;;;;
+;;;; [![ci]][status]
+;;;;
+;;;; [ci]: https://builds.sr.ht/~m15a/bump.fnl/commits/main/ci.yml.svg
+;;;; [status]: https://builds.sr.ht/~m15a/bump.fnl/commits/main/ci.yml
 
 ;;;; ## Synopsis
 ;;;;
