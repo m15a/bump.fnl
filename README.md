@@ -193,6 +193,10 @@ See [`compose`](#function-compose) for components' detail.
 (let [(ok? msg) (pcall decompose "0.0.1+a+b")]
   (assert (and (= false ok?)
                (= "expected one build tag, found many: 0.0.1+a+b" msg))))
+
+(let [(ok? msg) (pcall decompose "0.0.1=dev")]
+  (assert (and (= false ok?)
+               (= "invalid pre-release label and/or build tag: 0.0.1=dev" msg))))
 ```
 
 ### Function: version?
