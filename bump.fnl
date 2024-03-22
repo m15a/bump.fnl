@@ -246,7 +246,7 @@ See [SemVer spec](https://semver.org/#spec-item-11)."
   "Return `true` if `left` version is older than or equal to `right`.
 
 Otherwise `false`."
-  (or (version< left right) (not (version< right left))))
+  (not (version< right left)))
 
 (fn version> [left right]
   "Return `true` if `left` version is newer than `right`; otherwise `false`."
@@ -256,7 +256,7 @@ Otherwise `false`."
   "Return `true` if `left` version is newer than or equal to `right`.
 
 Otherwise `false`."
-  (or (version< right left) (not (version< left right))))
+  (not (version< left right)))
 
 (fn version<> [left right]
   "Return `true` if `left` and `right` versions have different precedence.
