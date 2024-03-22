@@ -5,14 +5,13 @@ packages:
 secrets:
   - deb4e7d8-9cff-41bf-b44c-2a1a8d2629c1
   - 97a85e37-fbc1-40b5-80d2-5649e7f8ddc0
-sources: []
 environment:
   SRC_URL: https://git.sr.ht/~m15a/bump.fnl
-  SRC_DIR: bump.fnl
+  BARE_SRC_DIR: bump.fnl.git
   DST_URL: git@github.com:m15a/bump.fnl
 tasks:
   - clone: |
       git clone --bare $SRC_URL
   - push: |
-      cd $SRC_DIR
+      cd $BARE_SRC_DIR
       git push --mirror $DST_URL
