@@ -78,7 +78,7 @@
 
 (local version :0.3.0-dev)
 
-(local {: view} (require :fennel))
+(local {: view : dofile} (require :fennel))
 
 (fn decompose [version]
   "Decompose `version` string to a table containing its components.
@@ -270,7 +270,7 @@ other than patch number, compose it with any other `bump/*` function.
                (tset :patch (+ version.patch 1))
                (tset :prerelease prerelease)))))
 
-(fn find-versions [text]
+(fn find-all [text]
   "Return a table whose keys are all version strings found in the `text`.
 
 Values are all `true`.
@@ -278,7 +278,7 @@ Values are all `true`.
 # Example
 
 ```fennel
-(let [found (find-versions \"1.2.3 1.2.3+meta 1.2.3 1.2.3-dev+a2cae63\")]
+(let [found (find-all \"1.2.3 1.2.3+meta 1.2.3 1.2.3-dev+a2cae63\")]
   (assert (= 3 (length (icollect [v _ (pairs found)] v))))
   (assert (. found \"1.2.3\"))
   (assert (. found \"1.2.3+meta\"))
@@ -293,12 +293,12 @@ Values are all `true`.
         versions (collect [v (text:gmatch release)] v true)]
     (collect [v (text:gmatch release/label) &into versions] v true)))
 
-(fn find-the-one-version [text]
+(fn find-one [text]
   "Find the one true version in the `text`.
 
 If not found, it returns `nil`.
 If multiple version strings are found, it raises error."
-  (let [versions (icollect [v (pairs (find-versions text))] v)]
+  (let [versions (icollect [v (pairs (find-all text))] v)]
     (case (length versions)
       0 nil
       1 (. versions 1)
@@ -310,20 +310,19 @@ If multiple version strings are found, it raises error."
   nil)
 
 (fn require-version [path]
-  (let [{: dofile} (require :fennel)]
-    (case (pcall dofile path)
-      (where (true x) (= :table (type x)))
-      (case (. x :version)
-        v (if (version? v) v
-              (warn/nil "invalid version " (view v) " in " path))
-        _ (warn/nil "version not exported in " path))
-      _ (warn/nil "failed to require version from " path))))
+  (case (pcall dofile path)
+    (where (true x) (= :table (type x)))
+    (case (. x :version)
+      v (if (version? v) v
+            (warn/nil "invalid version " (view v) " in " path))
+      _ (warn/nil "version not exported in " path))
+    _ (warn/nil "failed to require version from " path)))
 
 (fn read-version [path]
   (warn/nil "attempt to read version from " path " as text file")
   (case (io.open path)
     in (with-open [in in]
-         (case (pcall find-the-one-version (in:read :*a))
+         (case (pcall find-one (in:read :*a))
            (true v) (if (version? v) v
                         (warn/nil "invalid version \"" v "\" in " path))
            (_ msg) (warn/nil msg)))
@@ -339,11 +338,11 @@ If multiple version strings are found, it raises error."
     out (with-open [out out] (out:write text))
     (_ msg) (warn/nil msg)))
 
-(fn escape-regex [s]
+(fn %escape [s]
   (s:gsub "([%^%$%(%)%%%.%[%]%*%+%-%?])" "%%%1"))
 
-(fn replace [old new text]
-  (string.gsub text (escape-regex old) new))
+(fn %replace [old new text]
+  (string.gsub text (%escape old) new))
 
 (fn edit-file [path bump]
   "Bump version in a file at the `path` by using `bump` function.
@@ -361,7 +360,7 @@ It returns `true` in case of success and `nil` in failure."
   (case-try (or (require-version path)
                 (read-version path))
     version (read-contents path)
-    text (let [edited (replace version (bump version) text)]
+    text (let [edited (%replace version (bump version) text)]
            (and (write-contents edited path) true))
     (catch
       _ (warn/nil "failed to edit " path))))
