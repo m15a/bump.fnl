@@ -1,4 +1,4 @@
-# Bump.fnl (0.3.0)
+# Bump.fnl (0.3.1)
 
 bump.fnl - a tiny helper for version bumping.
 
