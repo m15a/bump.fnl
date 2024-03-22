@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning][2].
 [1]: https://keepachangelog.com/en/1.1.0/
 [2]: https://semver.org/spec/v2.0.0.html
 
+### Fixed
+
+- `bump.bash`: incorrect link generation [0aac0c0]
+
+[0aac0c0]: https://git.sr.ht/~m15a/bump.fnl/commit/0aac0c0
+
 ## [0.3.0] - 2024-03-22 +0900
 
 ### Changed
