@@ -32,9 +32,44 @@
 ;;;;     $ ./bump.fnl --bump 1.2.3 --chain --minor --minor
 ;;;;     1.4.0-chain
 ;;;;
-;;;;     $ ./bump.fnl --bump bump.fnl --major
-;;;;     $ grep 'local version' bump.fnl
-;;;;     (local version :2.0.0-dev)
+;;;;     $ ./bump.fnl --bump bump.fnl
+;;;;     $ ./bump.fnl --bump CHANGELOG.md
+;;;;     $ git diff
+;;;;     diff --git a/CHANGELOG.md b/CHANGELOG.md
+;;;;     index a5a8b31..01abb6f 100644
+;;;;     --- a/CHANGELOG.md
+;;;;     +++ b/CHANGELOG.md
+;;;;     @@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning][2].
+;;;;      [1]: https://keepachangelog.com/en/1.1.0/
+;;;;      [2]: https://semver.org/spec/v2.0.0.html
+;;;;      
+;;;;     -## [0.4.0-dev] - ???
+;;;;     +## [0.4.0] - 2024-03-25 +0900
+;;;;      
+;;;;      ## [0.3.1] - 2024-03-22 +0900
+;;;;      
+;;;;     @@ -57,7 +57,7 @@ and this project adheres to [Semantic Versioning][2].
+;;;;      
+;;;;      - Script to bump version string easily.
+;;;;      
+;;;;     -[0.4.0-dev]: https://git.sr.ht/~m15a/bump.fnl/refs/HEAD
+;;;;     +[0.4.0]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.4.0
+;;;;      [0.3.1]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.3.1
+;;;;      [0.3.0]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.3.0
+;;;;      [0.2.0]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.2.0
+;;;;     diff --git a/bump.fnl b/bump.fnl
+;;;;     index f49f1b8..5962f74 100755
+;;;;     --- a/bump.fnl
+;;;;     +++ b/bump.fnl
+;;;;     @@ -89,7 +89,7 @@
+;;;;      
+;;;;      ;;;; ## API documentation
+;;;;      
+;;;;     -(local version :0.4.0-dev)
+;;;;     +(local version :0.4.0)
+;;;;      
+;;;;      (local {: view : dofile} (require :fennel))
+;;;;      
 
 ;;;; ## Description
 ;;;;
@@ -490,6 +525,15 @@ If not found or multiple versions found, it raises error."
     in (with-open [in in] (in:read :*a))
     (_ msg) (warn/nil msg)))
 
+(fn read-lines [path]
+  (case (io.open path)
+    in (with-open [in in]
+         (let [lines []]
+           (each [line (in:lines)]
+             (table.insert lines line))
+           lines))
+    (_ msg) (warn/nil msg)))
+
 (fn write-contents [text path]
   (case (io.open path :w)
     out (with-open [out out] (out:write text))
@@ -499,7 +543,7 @@ If not found or multiple versions found, it raises error."
   (s:gsub "([%^%$%(%)%%%.%[%]%*%+%-%?])" "%%%1"))
 
 (fn %replace [old new text]
-  (string.gsub text (%escape old) new))
+  (text:gsub (%escape old) new))
 
 (fn edit [path bump]
   "Bump version in a file at the `path` by using `bump` function.
@@ -519,8 +563,233 @@ It returns `true` in case of success and `nil` in failure."
     version (read-contents path)
     text (let [edited (%replace version (bump version) text)]
            (and (write-contents edited path) true))
-    (catch
-      _ (warn/nil "failed to edit '" path "'"))))
+    (catch _ (warn/nil "failed to edit '" path "'"))))
+
+(local changelog {})
+
+(fn %parse-date [line]
+  (let [Y-m-d-z "%d%d%d%d%-%d%d%-%d%d [%-%+]%d%d%d%d"
+        Y-m-d-Z "%d%d%d%d%-%d%d%-%d%d %u%u%u"
+        Y-m-d "%d%d%d%d%-%d%d%-%d%d"]
+    (if (line:match Y-m-d-z)
+        {:pattern Y-m-d-z :format "%Y-%m-%d %z"}
+        (line:match Y-m-d-Z)
+        {:pattern Y-m-d-Z :format "%Y-%m-%d %Z"}
+        (line:match Y-m-d)
+        {:pattern Y-m-d :format "%Y-%m-%d"}
+        nil)))
+
+(fn %heading-format [line version ?date-pattern]
+  (let [fmt (line:gsub (%escape version) "{{VERSION}}")]
+    (if ?date-pattern
+        (fmt:gsub ?date-pattern "{{DATE}}")
+        fmt)))
+
+(fn %url-pattern [version]
+  (.. "^%s*%[" (%escape version) "%]:%s+<?http"))
+
+(fn %url-format [line version]
+  (line:gsub (%escape version) "{{VERSION}}"))
+
+(fn %changelog-analyze [in]
+  "Ugly changelog analyzer. To be refactored."
+  (let [info [{:url {}} {:url {}}]]
+    (var cursor 0)
+    (var heading-id 1)
+    (var url-id 1)
+    (each [line (in:lines) &until (< 2 url-id)]
+      (set cursor (+ cursor 1))
+      (when (and (<= heading-id 2)
+                 (line:match "^%s*## "))
+        (tset info heading-id :ln cursor)
+        (case (or (line:match "[Uu]nreleased") (parse line))
+          v (do
+              (if (version? v)
+                  (tset info heading-id :version v)
+                  (tset info heading-id :unreleased? true))
+              (case (%parse-date line)
+                d (tset info heading-id :date d))
+              (tset info heading-id :format
+                    (%heading-format line v (case (?. info heading-id :date)
+                                              d d.pattern)))
+              (tset info heading-id :url :pattern (%url-pattern v))))
+        (set heading-id (+ heading-id 1)))
+      (when (and (< 2 heading-id) (<= url-id 2)
+                 (?. info url-id :url :pattern)
+                 (line:match (?. info url-id :url :pattern)))
+        (tset info url-id :url :ln cursor)
+        (case (?. info url-id :version)
+          v (tset info url-id :url :format (%url-format line v)))
+        (set url-id (+ url-id 1))))
+    ;; Clean up
+    (for [i 1 2]
+      (when (?. info i :date :pattern)
+        (tset info i :date :pattern nil))
+      (tset info i :url :pattern nil)
+      (when (not (next (?. info i :url)))
+        (tset info i :url nil)))
+    info))
+
+(fn changelog.analyze [path]
+  "Analyze changelog at the `path` and return the analysed information.
+
+The result is a sequential table of length 2, each contains information about
+the first and second level-2 headings, respectively:
+
+- `ln`: line number of the heading;
+- `unreleased?`: whether the heading is `Unreleased` or not;
+- `version`: contained version string if any;
+- `format`: Format of the heading, e.g., `## [{{VERSION}}] - {{DATE}}`;
+- `date` - date information:
+  - `format`: `os.date` format;
+- `url` - information about the URL line corresponding to the heading:
+  - `ln`: line number; and
+  - `format`: URL line format, e.g., `[{{VERSION}}]: https://.../v{{VERSION}}`.
+
+Return the result information in case of success; otherwise return `nil`."
+  (case (io.open path)
+    in (with-open [in in] (%changelog-analyze in))
+    (_ msg) (warn/nil msg)))
+
+(fn changelog.validate [info]
+  (if (or (?. info 2 :unreleased?)
+          (prerelease? (?. info 2 :version)))
+      (warn/nil "invalid changelog: 2nd heading has pre-release version")
+      (and (not (?. info 1 :version))
+           (not (?. info 2 :version)))
+      (warn/nil "changelog lacks sufficient version information")
+      info))
+
+(fn %changelog-update/unreleased [info lines new]
+  (let [heading (case (?. info 2 :format)
+                  fmt (fmt:gsub "{{VERSION}}" new)
+                  _ (error "2nd level-2 heading has no format"))
+        heading (case (?. info 2 :date :format)
+                  dfmt (heading:gsub "{{DATE}}" (os.date dfmt))
+                  _ heading)]
+    (doto lines
+      (table.insert (+ (. info 1 :ln) 1) "")
+      (table.insert (+ (. info 1 :ln) 2) heading))
+    (case (?. info 2 :url)
+      url (let [line (url.format:gsub "{{VERSION}}" new)]
+            (doto lines
+             (table.insert (+ url.ln 2) line)))
+      _ lines)))
+
+(fn %changelog-update/prerelease->prerelease [info lines new]
+  (let [heading (case (?. info 1 :format)
+                  fmt (fmt:gsub "{{VERSION}}" new)
+                  _ (error "1st level-2 heading has no format"))]
+    (doto lines
+      (tset (. info 1 :ln) heading))
+    (case (?. info 1 :url)
+      url (let [line (url.format:gsub "{{VERSION}}" new)]
+            (doto lines
+             (tset url.ln line)))
+      _ lines)))
+
+(fn %changelog-update/prerelease->release [info lines new]
+  (let [heading (case (?. info 2 :format)
+                  fmt (fmt:gsub "{{VERSION}}" new)
+                  _ (error "2nd level-2 headings have no format"))
+        heading (case (?. info 2 :date :format)
+                  dfmt (heading:gsub "{{DATE}}" (os.date dfmt))
+                  _ heading)]
+    (doto lines
+      (tset (. info 1 :ln) heading))
+    (case-try (?. info 1 :url)
+      url-1 (?. info 2 :url)
+      url-2 (let [line (url-2.format:gsub "{{VERSION}}" new)]
+              (doto lines
+                (tset url-1.ln line)))
+      (catch _ lines))))
+
+(fn %changelog-update/release->prerelease [info lines new]
+  (let [heading (case (?. info 1 :format)
+                  fmt (fmt:gsub "{{VERSION}}" new)
+                  _ (error "1st level-2 heading has format"))
+        heading (heading:gsub "{{DATE}}" "???")]
+    (doto lines
+      (table.insert (. info 1 :ln) heading)
+      (table.insert (+ (. info 1 :ln) 1) ""))
+    (case (?. info 1 :url)
+      url (let [line (-> url.format
+                         (string.gsub "{{VERSION}}" new 1)
+                         (string.gsub "v?{{VERSION}}" "HEAD"))]
+            (doto lines
+             (table.insert (+ url.ln 2) line)))
+      _ lines)))
+
+(fn %changelog-update/release->release [info lines new]
+  (let [heading (case (?. info 1 :format)
+                  fmt (fmt:gsub "{{VERSION}}" new)
+                  _ (error "1st level-2 heading has no format"))
+        heading (case (?. info 1 :date :format)
+                  dfmt (heading:gsub "{{DATE}}" (os.date dfmt))
+                  _ heading)]
+    (doto lines
+      (table.insert (. info 1 :ln) heading)
+      (table.insert (+ (. info 1 :ln) 1) ""))
+    (case (?. info 1 :url)
+      url (let [line (url.format:gsub "{{VERSION}}" new)]
+            (doto lines
+             (table.insert (+ url.ln 2) line)))
+      _ lines)))
+
+(fn changelog.update [info path bump]
+  "Update changelog based on the analyzed `info` and return it as text."
+  (let [update
+        (if (?. info 1 :unreleased?)
+            (case (?. info 2 :version)
+              old (let [new (bump old)]
+                    (if (release? new)
+                        #(%changelog-update/unreleased $1 $2 new)
+                        #(warn/nil "invalid version bumping: " old " -> " new)))
+              _ (warn/nil "missing previous version string"))
+            (prerelease? (?. info 1 :version))
+            (let [old (. info 1 :version)
+                  new (bump old)]
+              (if (release? new)
+                  #(%changelog-update/prerelease->release $1 $2 new)
+                  #(%changelog-update/prerelease->prerelease $1 $2 new)))
+            ;; If the first level-2 heading has release version but missing
+            ;; date, it may imply pre-release version.
+            (and (release? (?. info 1 :version))
+                 (not (?. info 1 :date)))
+            (let [new (. info 1 :version)]
+              #(%changelog-update/prerelease->release $1 $2 new))
+            ;; Default case: 1st level-2 heading has previous release version
+            (release? (?. info 1 :version))
+            (let [old (. info 1 :version)
+                  new (bump old)]
+              (if (release? new)
+                  #(%changelog-update/release->release $1 $2 new)
+                  #(%changelog-update/release->prerelease $1 $2 new)))
+            (warn/nil "something is wrong with changelog '" path "'"))]
+    (case (read-lines path)
+      lines (case (update info lines)
+              lines (.. (table.concat lines "\n") "\n")
+              _ (warn/nil "failed to update changelog '" path "'"))
+      (_ msg) (warn/nil msg))))
+
+(fn changelog.edit [path bump]
+  "Bump version in a changelog at the `path` by using `bump` function.
+
+To update changelog, we will insert or update a level-2 heading containing
+bumped version string, and insert or update a URL line (i.e., a line around
+the bottom of the changelog, which looks like `[version]: https://...`)."
+    (case-try (changelog.analyze path)
+      info (changelog.validate info)
+      info (changelog.update info path bump)
+      edited (and (write-contents edited path) true)
+      (catch _ (warn/nil "failed to edit changelog '" path "'"))))
+
+(fn changelog? [path]
+  (case (type path)
+    :string (if (path:match "[Cc][Hh][Aa][Nn][Gg][Ee][Ll][Oo][Gg]")
+                true
+                false)
+    _ false))
 
 (fn help []
   (io.stderr:write "USAGE: " (. arg 0) " --bump"
@@ -557,7 +826,10 @@ It returns `true` in case of success and `nil` in failure."
         (io.stdout:write (bump version) "\n")
         (os.exit))
       (let [file version|file
-            ok? (or (edit file bump) false)]
+            ok? (or (if (changelog? file)
+                        (changelog.edit file bump)
+                        (edit file bump))
+                    false)]
         (os.exit ok?))))
 
 (when (= :--bump ...)
@@ -581,6 +853,7 @@ It returns `true` in case of success and `nil` in failure."
  : bump/prerelease
  : parse
  : gparse
+ ;: changelog
  : version}
 
 ;; vim: tw=80 spell
