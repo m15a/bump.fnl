@@ -457,12 +457,16 @@ If not found or multiple versions found, it raises error."
           _ v)
       _ (error "no version string found"))))
 
-(fn warn/nil [...]
+(fn warn [...]
   (io.stderr:write "bump.fnl: " ...)
-  (io.stderr:write "\n")
+  (io.stderr:write "\n"))
+
+(fn warn/nil [...]
+  (warn ...)
   nil)
 
 (fn require-version [path]
+  "Try `dofile` the `path` and search for exposed version."
   (case (pcall dofile path)
     (where (true x) (= :table (type x)))
     (case (. x :version)
@@ -497,11 +501,11 @@ If not found or multiple versions found, it raises error."
 (fn %replace [old new text]
   (string.gsub text (%escape old) new))
 
-(fn edit-file [path bump]
+(fn edit [path bump]
   "Bump version in a file at the `path` by using `bump` function.
 
-First of all, it tries to detect the version declared in the file by
-using the following heuristics one by one:
+First of all, it tries to detect the version declared in the file with
+the following heuristics one by one:
 
 1. Require the file with `dofile` and see if it has `:version` entry.
 2. Read the file as text and search for one unique version string.
@@ -553,7 +557,7 @@ It returns `true` in case of success and `nil` in failure."
         (io.stdout:write (bump version) "\n")
         (os.exit))
       (let [file version|file
-            ok? (or (edit-file file bump) false)]
+            ok? (or (edit file bump) false)]
         (os.exit ok?))))
 
 (when (= :--bump ...)
