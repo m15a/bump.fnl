@@ -453,7 +453,7 @@ If not found or multiple versions found, it raises error."
   (let [versions (collect [v (gparse text)] v true)]
     (case (next versions)
       v (case (next versions v)
-          u (error (.. "multiple version strings found, at least " v " and " u))
+          u (error (.. "multiple version strings found: at least " v " and " u))
           _ v)
       _ (error "no version string found"))))
 
@@ -467,17 +467,17 @@ If not found or multiple versions found, it raises error."
     (where (true x) (= :table (type x)))
     (case (. x :version)
       v (if (version? v) v
-            (warn/nil "invalid version " (view v) " in " path))
-      _ (warn/nil "version not exported in " path))
-    _ (warn/nil "failed to require version from " path)))
+            (warn/nil "invalid version " (view v) " in '" path "'"))
+      _ (warn/nil "version not exported in '" path "'"))
+    _ (warn/nil "failed to require version from '" path "'")))
 
 (fn read-version [path]
-  (warn/nil "attempt to read version from " path " as text file")
+  "Read the `path` and search for exactly one version string."
+  (warn "attempt to read version from '" path "' as text file")
   (case (io.open path)
     in (with-open [in in]
          (case (pcall parse/one (in:read :*a))
-           (true v) (if (version? v) v
-                        (warn/nil "invalid version \"" v "\" in " path))
+           (true v) v
            (_ msg) (warn/nil msg)))
     (_ msg) (warn/nil msg)))
 
@@ -516,7 +516,7 @@ It returns `true` in case of success and `nil` in failure."
     text (let [edited (%replace version (bump version) text)]
            (and (write-contents edited path) true))
     (catch
-      _ (warn/nil "failed to edit " path))))
+      _ (warn/nil "failed to edit '" path "'"))))
 
 (fn help []
   (io.stderr:write "USAGE: " (. arg 0) " --bump"
