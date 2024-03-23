@@ -21,7 +21,7 @@
         };
 
         mkCICheckShell = { gnumake, fennel, faith, fnldoc }:
-          pkgs.mkShellNoCC {
+          pkgs.mkShell {
             buildInputs = [ gnumake fennel fennel.lua faith fnldoc ];
           };
 
@@ -45,7 +45,7 @@
             luaVariant = [ "lua5_1" "lua5_2" "lua5_3" "lua5_4" "luajit" ];
           }));
       in
-      rec {
+      {
         devShells = {
           inherit (ci-check-shells)
           ci-check-shell-fennel-unstable-lua5_1
@@ -58,7 +58,7 @@
             let
               fennel = pkgs.fennel-unstable-luajit;
             in
-            pkgs.mkShellNoCC {
+            pkgs.mkShell {
               buildInputs = [
                 pkgs.gnumake
                 fennel
