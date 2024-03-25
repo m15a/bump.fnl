@@ -481,16 +481,55 @@ Optional `?init` specifies where to start the search (default: 1).
         _ nil))
     loop))
 
-(fn parse/one [text]
-  "Find the one true version in the `text`.
+;;; = Utilities ========================================================
 
-If not found or multiple versions found, it raises error."
+(fn <<? [f ?g]
+  (if ?g #(f (?g $)) f))
+
+(fn update! [tbl key fun ?init]
+  (doto tbl
+    (tset key (fun (or (. tbl key) ?init)))))
+
+(fn read-contents [path]
+  (case (io.open path)
+    in (with-open [in in] (in:read :*a))
+    (_ msg) (values nil msg)))
+
+(fn read-lines [path]
+  (case (io.open path)
+    in (with-open [in in]
+         (let [lines []]
+           (each [line (in:lines)]
+             (table.insert lines line))
+           lines))
+    (_ msg) (values nil msg)))
+
+(fn write-contents [text path]
+  (case (io.open path :w)
+    out (with-open [out out] (out:write text))
+    (_ msg) (values nil msg)))
+
+(fn escape-regex [s]
+  (case (type s)
+    :string (pick-values 1 (s:gsub "([%^%$%(%)%%%.%[%]%*%+%-%?])" "%%%1"))
+    _ (error "string expected, got " (view s))))
+
+(fn replace [old new text]
+  (case (type text)
+    :string (pick-values 1 (text:gsub (escape-regex old) new))
+    _ (error "string expected, got " (view text))))
+
+(fn parse/one [text]
+  "Find the one true version in the `text`; otherwise return `nil` and message."
   (let [versions (collect [v (gparse text)] v true)]
     (case (next versions)
       v (case (next versions v)
-          u (error (.. "multiple version strings found: at least " v " and " u))
+          u (values nil (.. "multiple version strings found: at least "
+                            v " and " u))
           _ v)
-      _ (error "no version string found"))))
+      _ (values nil "no version string found"))))
+
+;;; = CLI logging ======================================================
 
 (fn warn [...]
   (io.stderr:write "bump.fnl: " ...)
@@ -500,7 +539,11 @@ If not found or multiple versions found, it raises error."
   (warn ...)
   nil)
 
-(fn require-version [path]
+;;; = Generic file editor ==============================================
+
+(local generic {})
+
+(fn generic.require-version [path]
   "Try `dofile` the `path` and search for exposed version."
   (case (pcall dofile path)
     (where (true x) (= :table (type x)))
@@ -510,60 +553,34 @@ If not found or multiple versions found, it raises error."
       _ (warn/nil "version not exported in '" path "'"))
     _ (warn/nil "failed to require version from '" path "'")))
 
-(fn read-version [path]
+(fn generic.read-version [path]
   "Read the `path` and search for exactly one version string."
-  (warn "attempt to read version from '" path "' as text file")
+  (warn "attempt to find version in '" path "' as text file")
   (case (io.open path)
     in (with-open [in in]
-         (case (pcall parse/one (in:read :*a))
-           (true v) v
+         (case (parse/one (in:read :*a))
+           v v
            (_ msg) (warn/nil msg)))
     (_ msg) (warn/nil msg)))
 
-(fn read-contents [path]
-  (case (io.open path)
-    in (with-open [in in] (in:read :*a))
-    (_ msg) (warn/nil msg)))
+(fn generic.edit [path bump]
+  "Bump version in the file `path` by using `bump` function.
 
-(fn read-lines [path]
-  (case (io.open path)
-    in (with-open [in in]
-         (let [lines []]
-           (each [line (in:lines)]
-             (table.insert lines line))
-           lines))
-    (_ msg) (warn/nil msg)))
-
-(fn write-contents [text path]
-  (case (io.open path :w)
-    out (with-open [out out] (out:write text))
-    (_ msg) (warn/nil msg)))
-
-(fn %escape [s]
-  (s:gsub "([%^%$%(%)%%%.%[%]%*%+%-%?])" "%%%1"))
-
-(fn %replace [old new text]
-  (text:gsub (%escape old) new))
-
-(fn edit [path bump]
-  "Bump version in a file at the `path` by using `bump` function.
-
-First of all, it tries to detect the version declared in the file with
-the following heuristics one by one:
+It tries the following heuristics one by one:
 
 1. Require the file with `dofile` and see if it has `:version` entry.
 2. Read the file as text and search for one unique version string.
 
-After that, if any unique version is found, it bumps the version and
-replace the old version string with the new version in the file.
-
-It returns `true` in case of success and `nil` in failure."
-  (case-try (or (require-version path)
-                (read-version path))
+After that, if any unique version string is found, it bumps the version and
+replace the old version string with the new one."
+  (case-try (or (generic.require-version path)
+                (generic.read-version path))
     version (read-contents path)
-    text (let [edited (%replace version (bump version) text)]
+    text (let [edited (replace version (bump version) text)]
            (and (write-contents edited path) true))
     (catch _ (warn/nil "failed to edit '" path "'"))))
+
+;;; = Changelog editor =================================================
 
 (local changelog {})
 
@@ -580,16 +597,16 @@ It returns `true` in case of success and `nil` in failure."
         nil)))
 
 (fn %heading-format [line version ?date-pattern]
-  (let [fmt (line:gsub (%escape version) "{{VERSION}}")]
+  (let [fmt (line:gsub (escape-regex version) "{{VERSION}}")]
     (if ?date-pattern
         (fmt:gsub ?date-pattern "{{DATE}}")
         fmt)))
 
 (fn %url-pattern [version]
-  (.. "^%s*%[" (%escape version) "%]:%s+<?http"))
+  (.. "^%s*%[" (escape-regex version) "%]:%s+<?http"))
 
 (fn %url-format [line version]
-  (line:gsub (%escape version) "{{VERSION}}"))
+  (line:gsub (escape-regex version) "{{VERSION}}"))
 
 (fn %changelog-analyze [in]
   "Ugly changelog analyzer. To be refactored."
@@ -784,56 +801,66 @@ the bottom of the changelog, which looks like `[version]: https://...`)."
       edited (and (write-contents edited path) true)
       (catch _ (warn/nil "failed to edit changelog '" path "'"))))
 
-(fn changelog? [path]
+(fn changelog.changelog? [path]
   (case (type path)
     :string (if (path:match "[Cc][Hh][Aa][Nn][Gg][Ee][Ll][Oo][Gg]")
                 true
                 false)
     _ false))
 
-(fn help []
+;;; = CLI ==============================================================
+
+(local cli {})
+
+(fn cli.help []
   (io.stderr:write "USAGE: " (. arg 0) " --bump"
                    " [--major|-M]"
                    " [--minor|-m]"
                    " [--patch|-p]"
                    " [--dev|--alpha|--any-string]"
                    " VERSION|FILE" "\n")
-  (os.exit false))
+  (os.exit 1))
 
-(fn <<? [f ?g]
-  (if ?g #(f (?g $)) f))
+(fn cli.parse-args [args]
+  (-> (accumulate [config {} _ arg (ipairs args)]
+        (case arg
+          :--major (update! config :bump #(<<? bump/major $))
+          :-M      (update! config :bump #(<<? bump/major $))
+          :--minor (update! config :bump #(<<? bump/minor $))
+          :-m      (update! config :bump #(<<? bump/minor $))
+          :--patch (update! config :bump #(<<? bump/patch $))
+          :-p      (update! config :bump #(<<? bump/patch $))
+          (where flag (flag:match "^%-%-[^%-]+.*"))
+          (let [label (flag:match "^%-%-([^%-]+.*)")]
+            (update! config :bump #(<<? #(bump/prerelease $ label) $)))
+          any (update! config :version|file #(if $ (cli.help) any))))
+      (update! :bump #(or $ bump/release))))
+
+(fn cli.bump/version [bump version]
+  (io.stdout:write (bump version) "\n")
+  (os.exit))
+
+(fn cli.bump/changelog [bump path]
+  (case (if (changelog.changelog? path)
+            (changelog.edit path bump)
+            (generic.edit path bump))
+    true (os.exit)
+    _ (os.exit 1)))
+
+;;; = main =============================================================
 
 (fn main [args]
-  (var bump nil)
-  (var version|file nil)
-  (each [_ arg (ipairs args)]
-    (case arg
-      :--major (set bump (<<? bump/major bump))
-      :-M      (set bump (<<? bump/major bump))
-      :--minor (set bump (<<? bump/minor bump))
-      :-m      (set bump (<<? bump/minor bump))
-      :--patch (set bump (<<? bump/patch bump))
-      :-p      (set bump (<<? bump/patch bump))
-      (where flag (flag:match "^%-%-[^%-]+.*"))
-      (let [label (flag:match "^%-%-([^%-]+.*)")]
-        (set bump (<<? #(bump/prerelease $ label) bump)))
-      any (set version|file any)))
-  (when (not version|file)
-    (help))
-  (set bump (or bump bump/release))
-  (if (version? version|file)
-      (let [version version|file]
-        (io.stdout:write (bump version) "\n")
-        (os.exit))
-      (let [file version|file
-            ok? (or (if (changelog? file)
-                        (changelog.edit file bump)
-                        (edit file bump))
-                    false)]
-        (os.exit ok?))))
+  (let [{: bump : version|file} (cli.parse-args args)]
+    (when (not version|file)
+      (cli.help))
+    (if (version? version|file)
+        (cli.bump/version bump version|file)
+        (cli.bump/changelog bump version|file))))
 
 (when (= :--bump ...)
   (main (doto [...] (table.remove 1))))
+
+;;; ====================================================================
 
 {: decompose
  : compose
@@ -853,7 +880,9 @@ the bottom of the changelog, which looks like `[version]: https://...`)."
  : bump/prerelease
  : parse
  : gparse
+ ;: generic
  ;: changelog
+ ;: cli
  : version}
 
 ;; vim: tw=80 spell
