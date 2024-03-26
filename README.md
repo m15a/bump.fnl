@@ -134,7 +134,7 @@ Bump major version number in the `version` string.
 #### Example
 
 ```fennel
-(assert (= "1.0.0" (bump/major "0.9.28")))
+(bump/major "0.9.28") ;=> "1.0.0"
 ```
 
 ### Function: bump/minor
@@ -148,7 +148,7 @@ Bump minor version number in the `version` string.
 #### Example
 
 ```fennel
-(assert (= "0.3.0-dev" (bump/minor "0.2.3-dev")))
+(bump/minor "0.9.28") ;=> "0.10.0"
 ```
 
 ### Function: bump/patch
@@ -162,7 +162,7 @@ Bump patch version number in the `version` string.
 #### Example
 
 ```fennel
-(assert (= "0.6.1-alpha" (bump/patch "0.6.0-alpha")))
+(bump/patch "0.9.28") ;=> "0.9.29"
 ```
 
 ### Function: bump/prerelease
@@ -173,18 +173,20 @@ Bump patch version number in the `version` string.
 
 Append `?prerelease` label (default: `dev`) to the `version` string.
 
-Besides, it increments patch version number. If you like to increment
-other than patch number, compose it with any other `bump/*` function.
+Besides, it strips build tag and increments patch version number.
+If you like to increment other than patch number, compose it with any other
+`bump/*` function.
 
-#### Example
+#### Examples
 
 ```fennel
-(assert (= "1.2.1-dev" (bump/prerelease "1.2.0")))
-(assert (= "1.2.1-alpha" (bump/prerelease "1.2.0" :alpha)))
+(bump/prerelease "1.2.0") ;=> "1.2.1-dev"
+(bump/prerelease "1.2.0" :alpha) ;=> "1.2.1-alpha"
 
-(assert (= "1.2.0-dev" (-> "1.1.4"
-                           bump/prerelease
-                           bump/minor)))
+(-> "1.1.4"
+    bump/prerelease
+    bump/minor)
+;=> "1.2.0-dev"
 ```
 
 ### Function: bump/release
@@ -198,7 +200,7 @@ Strip pre-release and/or build label(s) from the `version` string.
 #### Example
 
 ```fennel
-(assert (= "1.2.1" (bump/release "1.2.1-dev+001")))
+(bump/release "1.2.1-dev+001") ;=> "1.2.1"
 ```
 
 ### Function: compose
@@ -215,18 +217,11 @@ Compose version string from a table that contains:
 - `prerelease`: suffix label that implies pre-release version (optional).
 - `build`: suffix label that attaches build meta information (optional).
 
-#### Examples
+#### Example
 
 ```fennel
-(assert (= "0.1.0-dev"
-           (compose {:major 0 :minor 1 :patch 0
-                     :prerelease :dev})))
-(assert (= "0.1.0+rc1"
-           (compose {:major 0 :minor 1 :patch 0
-                     :build :rc1})))
-(assert (= "0.1.0-test-case+exp.1"
-           (compose {:major 0 :minor 1 :patch 0
-                     :prerelease :test-case :build :exp.1})))
+(compose {:major 0 :minor 1 :patch 0 :prerelease :dev})
+;=> "0.1.0-dev"
 ```
 
 ### Function: decompose
@@ -242,26 +237,11 @@ See [`compose`](#function-compose) for components' detail.
 #### Examples
 
 ```fennel
-(let [decomposed (decompose "0.1.0-dev")]
-  (assert (= 0 decomposed.major))
-  (assert (= 1 decomposed.minor))
-  (assert (= 0 decomposed.patch))
-  (assert (= :dev decomposed.prerelease)))
+(decompose "1.1.0-rc.1")
+;=> {:major 1 :minor 1 :patch 0 :prerelease :rc.1}
 
-(let [decomposed (decompose "0.1.0-dev-1+0.0.1")]
-  (assert (= 0 decomposed.major))
-  (assert (= 1 decomposed.minor))
-  (assert (= 0 decomposed.patch))
-  (assert (= :dev-1 decomposed.prerelease))
-  (assert (= :0.0.1 decomposed.build)))
-
-(let [(ok? msg) (pcall decompose "0.0.1+a+b")]
-  (assert (and (= false ok?)
-               (= "expected one build tag, found many: 0.0.1+a+b" msg))))
-
-(let [(ok? msg) (pcall decompose "0.0.1=dev")]
-  (assert (and (= false ok?)
-               (= "invalid pre-release label and/or build tag: 0.0.1=dev" msg))))
+(decompose "0.3.1-dev+001")
+;=> {:major 0 :minor 3 :patch 1 :prerelease :dev :build :001}
 ```
 
 ### Function: gparse
@@ -275,12 +255,10 @@ Return an iterator that returns version strings in the `text` one by one.
 #### Example
 
 ```fennel
-(let [found (collect [v (gparse "4.5.6.7 1.2.3+m 4.3.2a 1.2.3 1.2.3-dev+a2")]
-              (values v true))]
-  (assert (= 3 (length (icollect [v _ (pairs found)] v))))
-  (assert (. found "1.2.3"))
-  (assert (. found "1.2.3+m"))
-  (assert (. found "1.2.3-dev+a2")))
+(let [text "4.5.6.7 1.2.3+m 4.3.2a 1.2.3 1.2.3-dev+a2"]
+  (doto (icollect [v (gparse text)] v)
+    table.sort))
+;=> ["1.2.3" "1.2.3+m" "1.2.3-dev+a2"]
 ```
 
 ### Function: parse
@@ -293,11 +271,11 @@ Return the first version string found in the `text`.
 
 Optional `?init` specifies where to start the search (default: 1).
 
-#### Example
+#### Examples
 
 ```fennel
-(assert (= "1.0.0-alpha" (parse " v1.0.0 1.0.0-alpha 1.0.1")))
-(assert (= "2.0.0" (parse "1.0.0 2.0.0" 2)))
+(parse " v1.0.0 1.0.0-alpha 1.0.1") ;=> "1.0.0-alpha"
+(parse "1.0.0 2.0.0" 2) ;=> "2.0.0"
 ```
 
 ### Function: prerelease?
@@ -311,9 +289,8 @@ If `x` is a prerelease version string, return `true`; otherwise `false`.
 #### Examples
 
 ```fennel
-(assert (= false (prerelease? :1.0.0.0)))
-(assert (= true (prerelease? "1.0.0-alpha")))
-(assert (= false (prerelease? "1.0.0+sha.a1bf00a")))
+(prerelease? "1.0.0+sha.a1bf00a") ;=> false
+(prerelease? "1.0.0-alpha") ;=> true
 ```
 
 ### Function: release?
@@ -327,9 +304,8 @@ If `x` is a release version string, return `true`; otherwise `false`.
 #### Examples
 
 ```fennel
-(assert (= false (release? :1.0.0+a+b)))
-(assert (= false (release? "1.0.0-alpha")))
-(assert (= true (release? "1.0.0+sha.a1bf00a")))
+(release? "1.0.0+sha.a1bf00a") ;=> true
+(release? "1.0.0-alpha") ;=> false
 ```
 
 ### Function: version<
@@ -343,12 +319,12 @@ Return `true` if `left` version is older than `right`; otherwise `false`.
 #### Examples
 
 ```fennel
-(assert (= true (version< :1.0.0-alpha :1.0.0-alpha.1)))
-(assert (= true (version< :1.0.0-alpha.1 :1.0.0-alpha.beta)))
-(assert (= true (version< :1.0.0-alpha.beta :1.0.0-beta)))
-(assert (= true (version< :1.0.0-beta.2 :1.0.0-beta.11)))
-(assert (= true (version< :1.0.0-beta.11 :1.0.0-rc.1)))
-(assert (= true (version< :1.0.0-rc.1 :1.0.0)))
+(version< :1.0.0-alpha :1.0.0-alpha.1) ;=> true
+(version< :1.0.0-alpha.1 :1.0.0-alpha.beta) ;=> true
+(version< :1.0.0-alpha.beta :1.0.0-beta) ;=> true
+(version< :1.0.0-beta.2 :1.0.0-beta.11) ;=> true
+(version< :1.0.0-beta.11 :1.0.0-rc.1) ;=> true
+(version< :1.0.0-rc.1 :1.0.0) ;=> true
 ```
 
 ### Function: version<=
@@ -374,7 +350,7 @@ Otherwise `false`. Note that build tags are ignored for version comparison.
 #### Example
 
 ```fennel
-(assert (= false (version<> :1.0.0-alpha+001 :1.0.0-alpha+100)))
+(version<> :1.0.0-alpha+001 :1.0.0-alpha+100) ;=> false
 ```
 
 ### Function: version=
@@ -390,7 +366,7 @@ Otherwise `false`. Note that build tags are ignored for version comparison.
 #### Example
 
 ```fennel
-(assert (= true (version= :1.0.0-alpha+001 :1.0.0-alpha+010)))
+(version= :1.0.0-alpha+001 :1.0.0-alpha+010) ;=> true
 ```
 
 ### Function: version>
@@ -422,9 +398,8 @@ If `x` is a version string, return `true`; otherwise return `false`.
 #### Examples
 
 ```fennel
-(assert (= true (version? "1.2.3-dev+111")))
-(assert (= false (version? "pineapple")))
-(assert (= false (version? {:major 1 :minor 2 :patch 3})))
+(version? "1.2.3-dev+111") ;=> true
+(version? {:major 1 :minor 2 :patch 3}) ;=> false
 ```
 
 ---
