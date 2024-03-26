@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning][2].
 
 ## [0.4.0-dev] - ???
 
+### Added
+
+- Support to bump changelog file [#4]
+
 ## [0.3.1] - 2024-03-22 +0900
 
 ### Fixed
