@@ -1,6 +1,6 @@
 # Bump.fnl (0.4.0-dev)
 
-bump.fnl - a tiny helper for version bumping.
+bump.fnl - bump version and changelog.
 
 <https://sr.ht/~m15a/bump.fnl>
 
@@ -29,54 +29,61 @@ bump.fnl - a tiny helper for version bumping.
     $ ./bump.fnl --bump 1.2.3 --any-string
     1.2.4-any-string
 
-    $ ./bump.fnl --bump 1.2.3 --chain --minor --minor
-    1.4.0-chain
+    $ ./bump.fnl --bump bump.fnl && git diff
 
-    $ ./bump.fnl --bump bump.fnl
-    $ ./bump.fnl --bump CHANGELOG.md
-    $ git diff
-    diff --git a/CHANGELOG.md b/CHANGELOG.md
-    index a5a8b31..01abb6f 100644
-    --- a/CHANGELOG.md
-    +++ b/CHANGELOG.md
-    @@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning][2].
-     [1]: https://keepachangelog.com/en/1.1.0/
-     [2]: https://semver.org/spec/v2.0.0.html
-     
-    -## [0.4.0-dev] - ???
-    +## [0.4.0] - 2024-03-25 +0900
-     
-     ## [0.3.1] - 2024-03-22 +0900
-     
-    @@ -57,7 +57,7 @@ and this project adheres to [Semantic Versioning][2].
-     
-     - Script to bump version string easily.
-     
-    -[0.4.0-dev]: https://git.sr.ht/~m15a/bump.fnl/refs/HEAD
-    +[0.4.0]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.4.0
-     [0.3.1]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.3.1
-     [0.3.0]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.3.0
-     [0.2.0]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.2.0
-    diff --git a/bump.fnl b/bump.fnl
-    index f49f1b8..5962f74 100755
-    --- a/bump.fnl
-    +++ b/bump.fnl
-    @@ -89,7 +89,7 @@
-     
-     ;;;; ## API documentation
-     
-    -(local version :0.4.0-dev)
-    +(local version :0.4.0)
-     
-     (local {: view : dofile} (require :fennel))
-     
+```diff
+diff --git a/bump.fnl b/bump.fnl
+index cefa8b4..c477853 100755
+--- a/bump.fnl
++++ b/bump.fnl
+@@ -95,7 +95,7 @@
+ 
+ ;;;; ## API documentation
+ 
+-(local version :0.4.0-dev)
++(local version :0.4.0)
+ 
+ (local {: view : dofile} (require :fennel))
+ 
+```
+
+    $ ./bump.fnl --bump CHANGELOG.md && git diff
+
+```diff
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index a5a8b31..92c350a 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning][2].
+ [1]: https://keepachangelog.com/en/1.1.0/
+ [2]: https://semver.org/spec/v2.0.0.html
+ 
+-## [0.4.0-dev] - ???
++## [0.4.0] - 2024-03-26 +0900
+ 
+ ## [0.3.1] - 2024-03-22 +0900
+ 
+@@ -57,7 +57,7 @@ and this project adheres to [Semantic Versioning][2].
+ 
+ - Script to bump version string easily.
+ 
+-[0.4.0-dev]: https://git.sr.ht/~m15a/bump.fnl/refs/HEAD
++[0.4.0]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.4.0
+ [0.3.1]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.3.1
+ [0.3.0]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.3.0
+ [0.2.0]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.2.0
+```
 
 ## Description
 
-This is a [Fennel] script to bump version string. You can use it in
-command line as shown in [Synopsis](#synopsis): it can bump command line
-argument version string, or version string contained in a file.
-See an example usage [`./bump.bash`](./bump.bash).
+`bump.fnl` bumps version string and changelog. You can use it in
+command line as shown in [Synopsis](#synopsis): it can
+
+- bump command line argument version string,
+- bump version string contained in any file, or
+- edit Markdown changelog according to intended version bumping.
+
+See an example usage [`./example.bash`](./example.bash).
 
 It is also a library for general-purpose [SemVer] version string
 manipulation. It provides functions to

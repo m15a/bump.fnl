@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 
-# Run this script, which will modify bump.fnl, CHANGELOG.md, and README.md
-# accordingly.
+# This script will bump version in bump.fnl and CHANGELOG.md
+# (and optionally README.md).
+# Arguments to this script are passed to ./bump.fnl.
+# Say, you want to bump major version, then try
 #
-# Arguments to this script are passed to ./bump.fnl. Say, you want to bump
-# major version, then try
-#
-#     $ ./bump.bash --major
+#     $ ./example.bash --major
 #
 # and see what changed by `git show`.
 
@@ -15,7 +14,7 @@ set -euo pipefail
 ./bump.fnl --bump bump.fnl "$@"
 ./bump.fnl --bump CHANGELOG.md "$@"
 
-make
+type -fP fnldoc && make readme
 
 git add bump.fnl README.md CHANGELOG.md
 
