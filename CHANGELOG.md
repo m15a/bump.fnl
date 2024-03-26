@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning][2].
 
 - Support to bump changelog file [#4]
 
+### Fixed
+
+- `compose`, `bump/prerelease`: raise error when `:prerelease` or
+  `:build` entry is not string or number [1fbba60].
+
+[1fbba60]: https://git.sr.ht/~m15a/bump.fnl/commit/1fbba60
+
 ## [0.3.1] - 2024-03-22 +0900
 
 ### Fixed
