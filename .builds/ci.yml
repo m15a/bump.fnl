@@ -5,16 +5,16 @@ environment:
 tasks:
   - check-luajit: |
       cd $SRC_DIR
-      nix develop .#ci-check-shell-fennel-unstable-luajit -c bash -c "make test"
+      nix develop .#ci-check-shell-fennel-unstable-luajit -c bash -c "make check"
   - check-lua5_4: |
       cd $SRC_DIR
-      nix develop .#ci-check-shell-fennel-unstable-lua5_4 -c bash -c "make test"
+      nix develop .#ci-check-shell-fennel-unstable-lua5_4 -c bash -c "make check"
   - check-lua5_3: |
       cd $SRC_DIR
-      nix develop .#ci-check-shell-fennel-unstable-lua5_3 -c bash -c "make test"
+      nix develop .#ci-check-shell-fennel-unstable-lua5_3 -c bash -c "make check"
   - check-lua5_2: |
       cd $SRC_DIR
-      nix develop .#ci-check-shell-fennel-unstable-lua5_2 -c bash -c "make test"
+      nix develop .#ci-check-shell-fennel-unstable-lua5_2 -c bash -c "make check"
   - check-lua5_1: |
       cd $SRC_DIR
-      nix develop .#ci-check-shell-fennel-unstable-lua5_1 -c bash -c "make test"
+      nix develop .#ci-check-shell-fennel-unstable-lua5_1 -c bash -c "make check"
