@@ -49,6 +49,11 @@
       {
         devShells = {
           inherit (ci-check-shells)
+          ci-check-shell-fennel-lua5_1
+          ci-check-shell-fennel-lua5_2
+          ci-check-shell-fennel-lua5_3
+          ci-check-shell-fennel-lua5_4
+          ci-check-shell-fennel-luajit
           ci-check-shell-fennel-unstable-lua5_1
           ci-check-shell-fennel-unstable-lua5_2
           ci-check-shell-fennel-unstable-lua5_3
