@@ -23,6 +23,7 @@
         mkCICheckShell = { gnumake, fennel, faith, fnldoc }:
           pkgs.mkShell {
             buildInputs = [ gnumake fennel fennel.lua faith fnldoc ];
+            FENNEL_PATH = "${faith}/bin/?";
           };
 
         builder = { fennelVariant, luaVariant }:
@@ -57,6 +58,7 @@
           default =
             let
               fennel = pkgs.fennel-unstable-luajit;
+              faith = pkgs.faith-unstable;
             in
             pkgs.mkShell {
               buildInputs = [
@@ -70,6 +72,7 @@
               ] ++ (with fennel.lua.pkgs; [
                 readline
               ]);
+              FENNEL_PATH = "${faith}/bin/?";
             };
           };
       });

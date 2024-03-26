@@ -1,5 +1,9 @@
+FENNEL ?= fennel
 FNLDOC ?= fnldoc
+FAITH ?= faith
+
 SRC := bump.fnl
+TESTS := $(shell find t -name '*.fnl' ! -name 'init*')
 
 .PHONY: readme
 readme: README.md
@@ -12,5 +16,6 @@ README.md: $(SRC:fnl=md)
 	$(FNLDOC) $<
 
 .PHONY: test
-test: $(SRC)
+test: $(SRC) $(TESTS)
+	$(FAITH) --tests $(subst /,.,$(patsubst %.fnl,%,$(TESTS)))
 	$(FNLDOC) --mode check $<
