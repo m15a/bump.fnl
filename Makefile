@@ -16,6 +16,9 @@ README.md: $(SRC:fnl=md)
 	$(FNLDOC) $<
 
 .PHONY: test
-test: $(SRC) $(TESTS)
+test: t/$(SRC) $(TESTS) $(SRC)
 	$(FAITH) --tests $(subst /,.,$(patsubst %.fnl,%,$(TESTS)))
-	$(FNLDOC) --mode check $<
+	$(FNLDOC) --mode check $(SRC)
+
+t/$(SRC): $(SRC)
+	cat $< | sed -E 's@^(\s*);INTERNAL :@\1:@' > $@

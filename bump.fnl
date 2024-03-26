@@ -869,9 +869,9 @@ the bottom of the changelog, which looks like `[version]: https://...`)."
  : bump/prerelease
  : parse
  : gparse
- ;: generic
- ;: changelog
- ;: cli
+ ;INTERNAL : generic
+ ;INTERNAL : changelog
+ ;INTERNAL : cli
  : version}
 
 ;; vim: tw=80 spell
