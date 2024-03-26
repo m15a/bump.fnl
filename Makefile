@@ -3,7 +3,7 @@ FNLDOC ?= fnldoc
 FAITH ?= faith
 
 SRC := bump.fnl
-TESTS := $(shell find t -name '*.fnl' ! -name 'init*')
+TESTS := $(shell find t -name '*.fnl' ! -name 'init*' ! -iregex '^t/f/.*')
 
 .PHONY: readme
 readme: README.md
