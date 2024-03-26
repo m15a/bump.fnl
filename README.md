@@ -81,7 +81,8 @@ command line as shown in [Synopsis](#synopsis): it can
 
 - bump command line argument version string,
 - bump version string contained in any file, or
-- edit Markdown changelog according to intended version bumping.
+- edit Markdown changelog according to intended version bumping
+  (**experimental feature**).
 
 See an example usage [`./example.bash`](./example.bash).
 

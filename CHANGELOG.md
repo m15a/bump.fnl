@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning][2].
 
 ### Added
 
-- Support to bump changelog file [#4]
+- **Experimental**: Support to bump changelog file [#4]
 
 ### Fixed
 
