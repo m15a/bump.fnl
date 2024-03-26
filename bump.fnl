@@ -505,10 +505,7 @@ Optional `?init` specifies where to start the search (default: 1).
 (fn read-lines [path]
   (case (io.open path)
     in (with-open [in in]
-         (let [lines []]
-           (each [line (in:lines)]
-             (table.insert lines line))
-           lines))
+         (icollect [line (in:lines)] line))
     (_ msg) (values nil msg)))
 
 (fn write-contents [text path]
