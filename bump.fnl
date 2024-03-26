@@ -521,12 +521,16 @@ Optional `?init` specifies where to start the search (default: 1).
 ;;; = CLI logging ======================================================
 
 (fn warn [...]
-  (io.stderr:write "bump.fnl: " ...)
-  (io.stderr:write "\n"))
+  (when (not _G._BUMPFNL_DEBUG)
+    (io.stderr:write "bump.fnl: " ...)
+    (io.stderr:write "\n")))
 
 (fn warn/nil [...]
-  (warn ...)
-  nil)
+  (if _G._BUMPFNL_DEBUG
+      (error (table.concat [...] " "))
+      (do
+        (warn ...)
+        nil)))
 
 ;;; = Generic file editor ==============================================
 
