@@ -112,8 +112,8 @@ See [API documentation](#api-documentation) for more details.
 ### Installation
 
 Copy [`./bump.fnl`](./bump.fnl) to your favorite path. To use it as a
-library, ensure that it is on Fennel search path, or add it to your
-`$FENNEL_PATH`.
+library, make sure that it is on Fennel search path, or add it to
+environment variable `$FENNEL_PATH`.
 
 
 ## API documentation
