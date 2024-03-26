@@ -97,8 +97,23 @@
 ;;;;
 ;;;; See [API documentation](#api-documentation) for more details.
 ;;;;
-;;;; [Fennel]: https://fennel-lang.org/
 ;;;; [SemVer]: https://semver.org/
+;;;;
+;;;; ### Requirements
+;;;;
+;;;; - [PUC Lua] 5.1+ or [LuaJIT]
+;;;; - [Fennel] 1.4.2+ (not tested but it might even work with older
+;;;;   versions.)
+;;;;
+;;;; [PUC Lua]: https://www.lua.org/
+;;;; [LuaJIT]: https://luajit.org/
+;;;; [Fennel]: https://fennel-lang.org/
+;;;;
+;;;; ### Installation
+;;;;
+;;;; Copy [`./bump.fnl`](./bump.fnl) to your favorite path. To use it as a
+;;;; library, ensure that it is on Fennel search path, or add it to your
+;;;; `$FENNEL_PATH`.
 
 ;;; BSD 3-Clause License
 ;;;
