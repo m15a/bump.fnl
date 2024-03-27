@@ -729,7 +729,7 @@ Return the result information in case of success; otherwise return `nil`."
       (warn/nil "changelog lacks sufficient version information")
       info))
 
-(fn %changelog-update/unreleased [info lines new]
+(fn %update/unreleased [info lines new]
   (let [heading (case (?. info 2 :format)
                   fmt (fmt:gsub "{{VERSION}}" new)
                   _ (error "2nd level-2 heading has no format"))
@@ -745,7 +745,7 @@ Return the result information in case of success; otherwise return `nil`."
              (table.insert (+ url.ln 2) line)))
       _ lines)))
 
-(fn %changelog-update/prerelease->prerelease [info lines new]
+(fn %update/prerelease->prerelease [info lines new]
   (let [heading (case (?. info 1 :format)
                   fmt (fmt:gsub "{{VERSION}}" new)
                   _ (error "1st level-2 heading has no format"))]
@@ -757,7 +757,7 @@ Return the result information in case of success; otherwise return `nil`."
              (tset url.ln line)))
       _ lines)))
 
-(fn %changelog-update/prerelease->release [info lines new]
+(fn %update/prerelease->release [info lines new]
   (let [heading (case (?. info 2 :format)
                   fmt (fmt:gsub "{{VERSION}}" new)
                   _ (error "2nd level-2 headings have no format"))
@@ -773,7 +773,7 @@ Return the result information in case of success; otherwise return `nil`."
                 (tset url-1.ln line)))
       (catch _ lines))))
 
-(fn %changelog-update/release->prerelease [info lines new]
+(fn %update/release->prerelease [info lines new]
   (let [heading (case (?. info 1 :format)
                   fmt (fmt:gsub "{{VERSION}}" new)
                   _ (error "1st level-2 heading has format"))
@@ -789,7 +789,7 @@ Return the result information in case of success; otherwise return `nil`."
              (table.insert (+ url.ln 2) line)))
       _ lines)))
 
-(fn %changelog-update/release->release [info lines new]
+(fn %update/release->release [info lines new]
   (let [heading (case (?. info 1 :format)
                   fmt (fmt:gsub "{{VERSION}}" new)
                   _ (error "1st level-2 heading has no format"))
@@ -812,28 +812,28 @@ Return the result information in case of success; otherwise return `nil`."
             (case (?. info 2 :version)
               old (let [new (bump old)]
                     (if (release? new)
-                        #(%changelog-update/unreleased $1 $2 new)
+                        #(%update/unreleased $1 $2 new)
                         #(warn/nil "invalid version bumping: " old " -> " new)))
               _ (warn/nil "missing previous version string"))
             (prerelease? (?. info 1 :version))
             (let [old (. info 1 :version)
                   new (bump old)]
               (if (release? new)
-                  #(%changelog-update/prerelease->release $1 $2 new)
-                  #(%changelog-update/prerelease->prerelease $1 $2 new)))
+                  #(%update/prerelease->release $1 $2 new)
+                  #(%update/prerelease->prerelease $1 $2 new)))
             ;; If the first level-2 heading has release version but missing
             ;; date, it may imply pre-release version.
             (and (release? (?. info 1 :version))
                  (not (?. info 1 :date)))
             (let [new (. info 1 :version)]
-              #(%changelog-update/prerelease->release $1 $2 new))
+              #(%update/prerelease->release $1 $2 new))
             ;; Default case: 1st level-2 heading has previous release version
             (release? (?. info 1 :version))
             (let [old (. info 1 :version)
                   new (bump old)]
               (if (release? new)
-                  #(%changelog-update/release->release $1 $2 new)
-                  #(%changelog-update/release->prerelease $1 $2 new)))
+                  #(%update/release->release $1 $2 new)
+                  #(%update/release->prerelease $1 $2 new)))
             (warn/nil "something is wrong with changelog '" path "'"))]
     (case (read-lines path)
       lines (case (update info lines)
