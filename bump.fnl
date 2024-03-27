@@ -663,9 +663,10 @@ replace the old version string with the new one."
         (merge! (if (version? v)
                     {:version v}
                     {:unreleased? true})
-                (let [dpat (case (?. info id :date)
-                             d d.pattern)]
-                  (changelog.parse-heading line v dpat))
+                (if (version? v)
+                    (changelog.parse-heading line v (case (?. info id :date)
+                                                      d d.pattern))
+                    {})
                 {:url (changelog.url/pattern v)}))))
 
 (fn %analyze/url! [info ln id line]

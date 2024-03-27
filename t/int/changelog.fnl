@@ -3,7 +3,8 @@
 (local {: parse-date
         : parse-heading
         : url/pattern
-        : parse-url}
+        : parse-url
+        : analyze}
        changelog)
 (local t (require :faith))
 
@@ -39,7 +40,6 @@
          (url/pattern "1.0.0"))
     (t.= {:pattern "^%s*%[unreleased%]:%s+<?http"}
          (url/pattern "unreleased")))
-
   (test :parse-url []
     (t.error "string expected, got 10"
              #(parse-url 10))
@@ -48,6 +48,87 @@
     (t.= {:format "[{{VERSION}}]: https://..."}
          (parse-url "[1.1.0-dev]: https://..." :1.1.0-dev))
     (t.= {:format "[{{VERSION}}]: https://.../v{{VERSION}}"}
-         (parse-url "[1.1.0]: https://.../v1.1.0" :1.1.0))))
+         (parse-url "[1.1.0]: https://.../v1.1.0" :1.1.0)))
+  (test :analyze/unreleased []
+    (t.= [{:ln 5
+           :unreleased? true
+           :url {:ln 19}}
+          {:ln 11
+           :version "1.0.0"
+           :date {:format "%Y-%m-%d"}
+           :format "## [{{VERSION}}] - {{DATE}}"
+           :url {:ln 20
+                 :format "[{{VERSION}}]: https://a.com/b/c/refs/v{{VERSION}}"}}]
+         (analyze "t/f/c/unreleased/base.md"))
+    (t.= [{:ln 5
+           :unreleased? true
+           :url {:ln 19}}
+          {:ln 11
+           :version "1.0.0"
+           :format "## [{{VERSION}}]"
+           :url {:ln 20
+                 :format "[{{VERSION}}]: https://a.com/b/c/refs/v{{VERSION}}"}}]
+         (analyze "t/f/c/unreleased/nodate.md"))
+    (t.= [{:ln 5
+           :unreleased? true}
+          {:ln 11
+           :version "1.0.0"
+           :date {:format "%Y-%m-%d"}
+           :format "## {{VERSION}} ({{DATE}})"}]
+         (analyze "t/f/c/unreleased/nourl.md")))
+  (test :analyze/prerelease []
+    (t.= [{:ln 5
+           :version "1.1.0-dev"
+           :format "## [{{VERSION}}]"
+           :url {:ln 19
+                 :format "[{{VERSION}}]: https://a.com/b/c/refs/main"}}
+          {:ln 11
+           :version "1.0.0"
+           :date {:format "%Y-%m-%d"}
+           :format "## [{{VERSION}}] - {{DATE}}"
+           :url {:ln 20
+                 :format "[{{VERSION}}]: https://a.com/b/c/refs/v{{VERSION}}"}}]
+         (analyze "t/f/c/prerelease/base.md"))
+    (t.= [{:ln 5
+           :version "1.1.0-dev"
+           :format "## [{{VERSION}}]"
+           :url {:ln 19
+                 :format "[{{VERSION}}]: https://a.com/b/c/refs/main"}}
+          {:ln 11
+           :version "1.0.0"
+           :format "## [{{VERSION}}]"
+           :url {:ln 20
+                 :format "[{{VERSION}}]: https://a.com/b/c/refs/v{{VERSION}}"}}]
+         (analyze "t/f/c/prerelease/nodate.md"))
+    (t.= [{:ln 5
+           :version "1.1.0-dev"
+           :format "## {{VERSION}} (???)"}
+          {:ln 11
+           :version "1.0.0"
+           :date {:format "%Y-%m-%d"}
+           :format "## {{VERSION}} ({{DATE}})"}]
+         (analyze "t/f/c/prerelease/nourl.md")))
+  (test :analyze/release []
+    (t.= [{:ln 5
+           :version "1.1.0"
+           :date {:format "%Y-%m-%d"}
+           :format "## [{{VERSION}}] - {{DATE}}"
+           :url {:ln 11
+                 :format "[{{VERSION}}]: https://a.com/b/c/refs/v{{VERSION}}"}}
+          {}]
+         (analyze "t/f/c/release/base.md"))
+    (t.= [{:ln 5
+           :version "1.1.0"
+           :format "## [{{VERSION}}]"
+           :url {:ln 11
+                 :format "[{{VERSION}}]: https://a.com/b/c/refs/v{{VERSION}}"}}
+          {}]
+         (analyze "t/f/c/release/nodate.md"))
+    (t.= [{:ln 5
+           :version "1.1.0"
+           :date {:format "%Y-%m-%d"}
+           :format "## {{VERSION}} / {{DATE}}"}
+          {}]
+         (analyze "t/f/c/release/nourl.md"))))
 
 ;; vim: set lw+=testing,test:
