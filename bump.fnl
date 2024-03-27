@@ -606,11 +606,20 @@ replace the old version string with the new one."
         (line:match Y-m-d.pattern) Y-m-d
         (values nil "no date pattern found"))))
 
-(fn %heading-format [line version ?date-pattern]
+(fn changelog.parse-heading [line version ?date-pattern]
+  (when (not= :string (type line))
+    (error (.. "string expected, got " (view line))))
+  (when (not (and (= :string (type version))
+                  (or (version? version)
+                      (version:match "^[Uu]nreleased$"))))
+    (error (.. "version string expected, got " (view version))))
+  (when (and (not= nil ?date-pattern)
+             (not= :string (type ?date-pattern)))
+    (error (.. "string expected, got " (view ?date-pattern))))
   (let [fmt (line:gsub (escape-regex version) "{{VERSION}}")]
-    (if ?date-pattern
-        (fmt:gsub ?date-pattern "{{DATE}}")
-        fmt)))
+    {:format (if ?date-pattern
+                 (fmt:gsub ?date-pattern "{{DATE}}")
+                 fmt)}))
 
 (fn %url-pattern [version]
   (.. "^%s*%[" (escape-regex version) "%]:%s+<?http"))
@@ -637,8 +646,10 @@ replace the old version string with the new one."
               (case (changelog.parse-date line)
                 d (tset info heading-id :date d))
               (tset info heading-id :format
-                    (%heading-format line v (case (?. info heading-id :date)
-                                              d d.pattern)))
+                    (let [dpat (case (?. info heading-id :date)
+                                 d d.pattern)]
+                      (. (changelog.parse-heading line v dpat)
+                         :format)))
               (tset info heading-id :url :pattern (%url-pattern v))))
         (set heading-id (+ heading-id 1)))
       (when (and (< 2 heading-id) (<= url-id 2)
