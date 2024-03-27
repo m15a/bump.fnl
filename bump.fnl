@@ -491,7 +491,8 @@ Optional `?init` specifies where to start the search (default: 1).
 ;;; = Utilities ========================================================
 
 (macro each/index [bindings & body]
-  (let [index (table.remove bindings 1)
+  (let [unpack (or table.unpack _G.unpack)
+        index (table.remove bindings 1)
         each-form `(each ,bindings ,(unpack body))]
     (table.insert each-form `(set ,index (+ ,index 1)))
     `(do
