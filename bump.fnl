@@ -654,43 +654,35 @@ replace the old version string with the new one."
     (error (.. "version string expected, got " (view version))))
   {:format (line:gsub (escape-regex version) "{{VERSION}}")})
 
-(fn %changelog-analyze [in]
-  "Ugly changelog analyzer. To be refactored."
-  (let [info [{:url {}} {:url {}}]]
-    (var heading-id 1)
-    (var url-id 1)
-    (each/index [ln line (in:lines) &until (< 2 url-id)]
-      (when (and (<= heading-id 2)
-                 (line:match "^%s*## "))
-        (doto (. info heading-id)
-          (merge! {: ln :date (changelog.parse-date line)}))
-        (case (or (line:match "[Uu]nreleased")
-                  (parse line))
-          v (doto (. info heading-id)
-              (merge! (if (version? v)
-                          {:version v}
-                          {:unreleased? true})
-                      (let [dpat (case (?. info heading-id :date)
-                                   d d.pattern)]
-                        (changelog.parse-heading line v dpat))
-                      {:url (changelog.url/pattern v)})))
-        (set heading-id (+ heading-id 1)))
-      (when (and (< 2 heading-id) (<= url-id 2)
-                 (?. info url-id :url :pattern)
-                 (line:match (?. info url-id :url :pattern)))
-        (doto (. info url-id :url)
-          (merge! {: ln}
-                  (case (?. info url-id :version)
-                    v (changelog.parse-url line v))))
-        (set url-id (+ url-id 1))))
-    ;; Clean up
-    (for [i 1 2]
-      (when (?. info i :date :pattern)
-        (tset info i :date :pattern nil))
-      (tset info i :url :pattern nil)
-      (when (not (next (?. info i :url)))
-        (tset info i :url nil)))
-    info))
+(fn %analyze/heading! [info ln id line]
+  (doto (. info id)
+    (merge! {: ln :date (changelog.parse-date line)}))
+  (case (or (line:match "[Uu]nreleased")
+            (parse line))
+    v (doto (. info id)
+        (merge! (if (version? v)
+                    {:version v}
+                    {:unreleased? true})
+                (let [dpat (case (?. info id :date)
+                             d d.pattern)]
+                  (changelog.parse-heading line v dpat))
+                {:url (changelog.url/pattern v)}))))
+
+(fn %analyze/url! [info ln id line]
+  (doto (. info id :url)
+    (merge! {: ln}
+            (case (?. info id :version)
+              v (changelog.parse-url line v)))))
+
+(fn %analyze/cleanup! [info]
+  (for [i 1 2]
+    (when (?. info i :date :pattern)
+      (tset info i :date :pattern nil))
+    (when (?. info i :url :pattern)
+      (tset info i :url :pattern nil))
+    (when (not (next (?. info i :url)))
+      (tset info i :url nil)))
+  info)
 
 (fn changelog.analyze [path]
   "Analyze changelog at the `path` and return the analysed information.
@@ -710,7 +702,21 @@ the first and second level-2 headings, respectively:
 
 Return the result information in case of success; otherwise return `nil`."
   (case (io.open path)
-    in (with-open [in in] (%changelog-analyze in))
+    in (with-open [in in]
+         (let [info [{:url {}} {:url {}}]]
+           (var heading-id 1)
+           (var url-id 1)
+           (each/index [ln line (in:lines) &until (< 2 url-id)]
+             (when (and (<= heading-id 2)
+                        (line:match "^%s*## "))
+               (%analyze/heading! info ln heading-id line)
+               (set heading-id (+ heading-id 1)))
+             (when (and (<= url-id 2)
+                        (?. info url-id :url :pattern)
+                        (line:match (?. info url-id :url :pattern)))
+               (%analyze/url! info ln url-id line)
+               (set url-id (+ url-id 1))))
+           (%analyze/cleanup! info)))
     (_ msg) (warn/nil msg)))
 
 (fn changelog.validate [info]
