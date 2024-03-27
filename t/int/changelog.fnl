@@ -4,7 +4,8 @@
         : parse-heading
         : url/pattern
         : parse-url
-        : analyze}
+        : analyze
+        : validate}
        changelog)
 (local t (require :faith))
 
@@ -129,6 +130,13 @@
            :date {:format "%Y-%m-%d"}
            :format "## {{VERSION}} / {{DATE}}"}
           {}]
-         (analyze "t/f/c/release/nourl.md"))))
+         (analyze "t/f/c/release/nourl.md")))
+  (test :validate []
+    (t.error "invalid changelog: 2nd heading has pre%-release version"
+             #(validate [{} {:unreleased? true}]))
+    (t.error "invalid changelog: 2nd heading has pre%-release version"
+             #(validate [{} {:version "0.1.1-dev"}]))
+    (t.error "changelog lacks sufficient version information"
+             #(validate [{} {}]))))
 
 ;; vim: set lw+=testing,test:
