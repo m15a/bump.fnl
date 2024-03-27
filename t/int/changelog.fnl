@@ -5,7 +5,8 @@
         : url/pattern
         : parse-url
         : analyze
-        : validate}
+        : validate
+        : changelog?}
        changelog)
 (local t (require :faith))
 
@@ -137,6 +138,12 @@
     (t.error "invalid changelog: 2nd heading has pre%-release version"
              #(validate [{} {:version "0.1.1-dev"}]))
     (t.error "changelog lacks sufficient version information"
-             #(validate [{} {}]))))
+             #(validate [{} {}])))
+  (test :changelog? []
+    (t.= true (changelog? "CHANGELOG.md"))
+    (t.= true (changelog? "CHANGELOG.markdown"))
+    ;; FIXME: recognize non-markdown changelog.
+    ; (t.= false (changelog? "CHANGELOG.adoc"))
+    (t.= true (changelog? "path/to/changelog.md"))))
 
 ;; vim: set lw+=testing,test:
