@@ -632,11 +632,19 @@ replace the old version string with the new one."
                  (fmt:gsub ?date-pattern "{{DATE}}")
                  fmt)}))
 
-(fn %url-pattern [version]
-  (.. "^%s*%[" (escape-regex version) "%]:%s+<?http"))
+(fn changelog.url/pattern [version]
+  (when (not (or (version? version)
+                 (unreleased? version)))
+    (error (.. "version string expected, got " (view version))))
+  {:pattern (.. "^%s*%[" (escape-regex version) "%]:%s+<?http")})
 
-(fn %url-format [line version]
-  (line:gsub (escape-regex version) "{{VERSION}}"))
+(fn changelog.parse-url [line version]
+  (when (not= :string (type line))
+    (error (.. "string expected, got " (view line))))
+  (when (not (or (version? version)
+                 (unreleased? version)))
+    (error (.. "version string expected, got " (view version))))
+  {:format (line:gsub (escape-regex version) "{{VERSION}}")})
 
 (fn %changelog-analyze [in]
   "Ugly changelog analyzer. To be refactored."
@@ -650,23 +658,23 @@ replace the old version string with the new one."
                  (line:match "^%s*## "))
         (tset info heading-id :ln cursor)
         (case (or (line:match "[Uu]nreleased") (parse line))
-          v (do
-              (doto (. info heading-id)
-                (merge! (if (version? v)
-                            {:version v}
-                            {:unreleased? true})
-                        {:date (changelog.parse-date line)}
-                        (let [dpat (case (?. info heading-id :date)
-                                     d d.pattern)]
-                          (changelog.parse-heading line v dpat))))
-              (tset info heading-id :url :pattern (%url-pattern v))))
+          v (doto (. info heading-id)
+              (merge! (if (version? v)
+                          {:version v}
+                          {:unreleased? true})
+                      {:date (changelog.parse-date line)}
+                      (let [dpat (case (?. info heading-id :date)
+                                   d d.pattern)]
+                        (changelog.parse-heading line v dpat))
+                      {:url (changelog.url/pattern v)})))
         (set heading-id (+ heading-id 1)))
       (when (and (< 2 heading-id) (<= url-id 2)
                  (?. info url-id :url :pattern)
                  (line:match (?. info url-id :url :pattern)))
-        (tset info url-id :url :ln cursor)
-        (case (?. info url-id :version)
-          v (tset info url-id :url :format (%url-format line v)))
+        (doto (. info url-id :url)
+          (merge! {:ln cursor}
+                  (case (?. info url-id :version)
+                    v (changelog.parse-url line v))))
         (set url-id (+ url-id 1))))
     ;; Clean up
     (for [i 1 2]
