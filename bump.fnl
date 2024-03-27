@@ -592,17 +592,19 @@ replace the old version string with the new one."
 
 (local changelog {})
 
-(fn %parse-date [line]
-  (let [Y-m-d-z "%d%d%d%d%-%d%d%-%d%d [%-%+]%d%d%d%d"
-        Y-m-d-Z "%d%d%d%d%-%d%d%-%d%d %u%u%u"
-        Y-m-d "%d%d%d%d%-%d%d%-%d%d"]
-    (if (line:match Y-m-d-z)
-        {:pattern Y-m-d-z :format "%Y-%m-%d %z"}
-        (line:match Y-m-d-Z)
-        {:pattern Y-m-d-Z :format "%Y-%m-%d %Z"}
-        (line:match Y-m-d)
-        {:pattern Y-m-d :format "%Y-%m-%d"}
-        nil)))
+(fn changelog.parse-date [line]
+  (when (not= :string (type line))
+    (error (.. "string expected, got " (view line))))
+  (let [Y-m-d-z {:pattern "%d%d%d%d%-%d%d%-%d%d%s+[%-%+]%d%d%d%d"
+                 :format "%Y-%m-%d %z"}
+        Y-m-d-Z {:pattern "%d%d%d%d%-%d%d%-%d%d%s+%u%u%u"
+                 :format "%Y-%m-%d %Z"}
+        Y-m-d {:pattern "%d%d%d%d%-%d%d%-%d%d"
+               :format "%Y-%m-%d"}]
+    (if (line:match Y-m-d-z.pattern) Y-m-d-z
+        (line:match Y-m-d-Z.pattern) Y-m-d-Z
+        (line:match Y-m-d.pattern) Y-m-d
+        (values nil "no date pattern found"))))
 
 (fn %heading-format [line version ?date-pattern]
   (let [fmt (line:gsub (escape-regex version) "{{VERSION}}")]
@@ -632,7 +634,7 @@ replace the old version string with the new one."
               (if (version? v)
                   (tset info heading-id :version v)
                   (tset info heading-id :unreleased? true))
-              (case (%parse-date line)
+              (case (changelog.parse-date line)
                 d (tset info heading-id :date d))
               (tset info heading-id :format
                     (%heading-format line v (case (?. info heading-id :date)
