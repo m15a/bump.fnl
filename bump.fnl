@@ -490,6 +490,14 @@ Optional `?init` specifies where to start the search (default: 1).
 
 ;;; = Utilities ========================================================
 
+(macro each/index [bindings & body]
+  (let [index (table.remove bindings 1)
+        each-form `(each ,bindings ,(unpack body))]
+    (table.insert each-form `(set ,index (+ ,index 1)))
+    `(do
+       (var ,index 1)
+       ,each-form)))
+
 (fn <<? [f ?g]
   (if ?g #(f (?g $)) f))
 
@@ -649,20 +657,19 @@ replace the old version string with the new one."
 (fn %changelog-analyze [in]
   "Ugly changelog analyzer. To be refactored."
   (let [info [{:url {}} {:url {}}]]
-    (var cursor 0)
     (var heading-id 1)
     (var url-id 1)
-    (each [line (in:lines) &until (< 2 url-id)]
-      (set cursor (+ cursor 1))
+    (each/index [ln line (in:lines) &until (< 2 url-id)]
       (when (and (<= heading-id 2)
                  (line:match "^%s*## "))
-        (tset info heading-id :ln cursor)
-        (case (or (line:match "[Uu]nreleased") (parse line))
+        (doto (. info heading-id)
+          (merge! {: ln :date (changelog.parse-date line)}))
+        (case (or (line:match "[Uu]nreleased")
+                  (parse line))
           v (doto (. info heading-id)
               (merge! (if (version? v)
                           {:version v}
                           {:unreleased? true})
-                      {:date (changelog.parse-date line)}
                       (let [dpat (case (?. info heading-id :date)
                                    d d.pattern)]
                         (changelog.parse-heading line v dpat))
@@ -672,7 +679,7 @@ replace the old version string with the new one."
                  (?. info url-id :url :pattern)
                  (line:match (?. info url-id :url :pattern)))
         (doto (. info url-id :url)
-          (merge! {:ln cursor}
+          (merge! {: ln}
                   (case (?. info url-id :version)
                     v (changelog.parse-url line v))))
         (set url-id (+ url-id 1))))
@@ -926,4 +933,4 @@ the bottom of the changelog, which looks like `[version]: https://...`)."
  ;INTERNAL : cli
  : version}
 
-;; vim: tw=80 spell
+;; vim: tw=80 spell lw+=each/index
