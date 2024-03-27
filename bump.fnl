@@ -821,13 +821,17 @@ the bottom of the changelog, which looks like `[version]: https://...`)."
 (local cli {})
 
 (fn cli.help []
-  (io.stderr:write "USAGE: " (. arg 0) " --bump"
-                   " [--major|-M]"
-                   " [--minor|-m]"
-                   " [--patch|-p]"
-                   " [--dev|--alpha|--any-string]"
-                   " VERSION|FILE" "\n")
-  (os.exit 1))
+  (let [msg (.. "USAGE: " (. arg 0) " --bump"
+                " [--major|-M]"
+                " [--minor|-m]"
+                " [--patch|-p]"
+                " [--dev|--alpha|--any-string]"
+                " VERSION|FILE" "\n")]
+    (if _G._BUMPFNL_DEBUG
+        (error msg)
+        (do
+          (io.stderr:write msg)
+          (os.exit 1)))))
 
 (fn cli.parse-args [args]
   (-> (accumulate [config {} _ arg (ipairs args)]
@@ -842,6 +846,7 @@ the bottom of the changelog, which looks like `[version]: https://...`)."
           (let [label (flag:match "^%-%-([^%-]+.*)")]
             (update! config :bump #(<<? #(bump/prerelease $ label) $)))
           any (update! config :version|file #(if $ (cli.help) any))))
+      (#(if (. $ :version|file) $ (cli.help)))
       (update! :bump #(or $ bump/release))))
 
 (fn cli.bump/version [bump version]
@@ -859,8 +864,6 @@ the bottom of the changelog, which looks like `[version]: https://...`)."
 
 (fn main [args]
   (let [{: bump : version|file} (cli.parse-args args)]
-    (when (not version|file)
-      (cli.help))
     (if (version? version|file)
         (cli.bump/version bump version|file)
         (cli.bump/changelog bump version|file))))
