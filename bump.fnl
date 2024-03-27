@@ -497,6 +497,12 @@ Optional `?init` specifies where to start the search (default: 1).
   (doto tbl
     (tset key (fun (or (. tbl key) ?init)))))
 
+(fn merge! [tbl ...]
+  (each [_ tbl* (ipairs [...])]
+    (each [k v (pairs tbl*)]
+      (tset tbl k v)))
+  tbl)
+
 (fn read-contents [path]
   (case (io.open path)
     in (with-open [in in] (in:read :*a))
@@ -590,6 +596,12 @@ replace the old version string with the new one."
 
 ;;; = Changelog editor =================================================
 
+(fn unreleased? [x]
+  (if (and (= :string (type x))
+           (x:match "^[Uu]nreleased$"))
+      true
+      false))
+
 (local changelog {})
 
 (fn changelog.parse-date [line]
@@ -609,9 +621,8 @@ replace the old version string with the new one."
 (fn changelog.parse-heading [line version ?date-pattern]
   (when (not= :string (type line))
     (error (.. "string expected, got " (view line))))
-  (when (not (and (= :string (type version))
-                  (or (version? version)
-                      (version:match "^[Uu]nreleased$"))))
+  (when (not (or (version? version)
+                 (unreleased? version)))
     (error (.. "version string expected, got " (view version))))
   (when (and (not= nil ?date-pattern)
              (not= :string (type ?date-pattern)))
@@ -640,16 +651,14 @@ replace the old version string with the new one."
         (tset info heading-id :ln cursor)
         (case (or (line:match "[Uu]nreleased") (parse line))
           v (do
-              (if (version? v)
-                  (tset info heading-id :version v)
-                  (tset info heading-id :unreleased? true))
-              (case (changelog.parse-date line)
-                d (tset info heading-id :date d))
-              (tset info heading-id :format
-                    (let [dpat (case (?. info heading-id :date)
-                                 d d.pattern)]
-                      (. (changelog.parse-heading line v dpat)
-                         :format)))
+              (doto (. info heading-id)
+                (merge! (if (version? v)
+                            {:version v}
+                            {:unreleased? true})
+                        {:date (changelog.parse-date line)}
+                        (let [dpat (case (?. info heading-id :date)
+                                     d d.pattern)]
+                          (changelog.parse-heading line v dpat))))
               (tset info heading-id :url :pattern (%url-pattern v))))
         (set heading-id (+ heading-id 1)))
       (when (and (< 2 heading-id) (<= url-id 2)
