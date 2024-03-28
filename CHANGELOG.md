@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning][2].
 
 ## [0.4.1-dev] - ???
 
+### Fixed
+
+- Stop bumping when old and new versions are the same [b642de3].
+
+[b642de3]: https://git.sr.ht/~m15a/bump.fnl/commit/b642de3
+
 ## [0.4.0] - 2024-03-26 +0900
 
 ### Added
