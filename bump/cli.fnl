@@ -12,6 +12,7 @@
   (let [out (if stdout? io.stdout io.stderr)
         msg (.. "USAGE: " (. arg 0)
                 " [--help|-h]"
+                " [--version|-v]"
                 " [--major|-M]"
                 " [--minor|-m]"
                 " [--patch|-p]"
@@ -23,11 +24,18 @@
           (out:write msg "\n")
           (os.exit (if stdout? 0 1))))))
 
+(fn show-version []
+  (let [{: version} (require :bump)]
+    (io.stdout:write version "\n"))
+  (os.exit))
+
 (fn parse-args [args]
   (-> (accumulate [config {} _ arg (ipairs args)]
         (case arg
-          :--help  (show-help :stdout)
-          :-h      (show-help :stdout)
+          :--help    (show-help :stdout)
+          :-h        (show-help :stdout)
+          :--version (show-version)
+          :-v        (show-version)
           :--major (update! config :bump #(<<? bump/major $))
           :-M      (update! config :bump #(<<? bump/major $))
           :--minor (update! config :bump #(<<? bump/minor $))
@@ -53,6 +61,7 @@
     _ (os.exit 1)))
 
 {: show-help
+ : show-version
  : parse-args
  : bump/version
  : bump/file}
