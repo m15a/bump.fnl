@@ -561,7 +561,7 @@ Optional `?init` specifies where to start the search (default: 1).
 
 (fn warn/nil [...]
   (if _G._BUMPFNL_DEBUG
-      (error (table.concat [...] " "))
+      (error (table.concat [...] ""))
       (do
         (warn ...)
         nil)))
