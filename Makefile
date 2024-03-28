@@ -8,7 +8,7 @@ API_SRC := bump.fnl
 MAIN_SRC := bump/main.fnl
 SRCS := $(API_SRC) $(shell find bump -name '*.fnl')
 TESTS := $(shell find t -name '*.fnl' ! -name 'init*' ! -name 'bump.fnl' \
-		 ! -iregex '^t/[fp]/.*')
+		 ! -regex '^t/[fp]/.*')
 
 FENNEL_BUILD_FLAGS = --no-metadata --require-as-include --compile
 EXECUTABLE := bin/bump
@@ -18,7 +18,7 @@ DESTDIR ?=
 PREFIX ?= /usr/local
 BINDIR = $(PREFIX)/bin
 
-DOCKER_SRC := docker/$(notdir $(EXECUTABLE))
+DOCKER_SRCS := $(foreach s,$(SRCS) Makefile,docker/$(s))
 
 .PHONY: build
 build: $(EXECUTABLE)
@@ -36,14 +36,23 @@ install: $(EXECUTABLE)
 
 .PHONY: clean
 clean:
-	rm -f $(EXECUTABLE) $(DOCKER_SRC)
+	rm -f $(EXECUTABLE) $(DOCKER_SRCS)
 
 .PHONY: docker-image
-docker-image: $(DOCKER_SRC)
+docker-image: $(DOCKER_SRCS)
 	$(DOCKER) build -t bump.fnl docker
 
-$(DOCKER_SRC): $(EXECUTABLE)
+docker/Makefile: Makefile
 	cp $< $@
+
+docker/%.fnl: %.fnl
+	cp $< $@
+
+docker/bump/%.fnl: bump/%.fnl docker/bump
+	cp $< $@
+
+docker/bump:
+	mkdir -p $@
 
 .PHONY: readme
 readme: README.md

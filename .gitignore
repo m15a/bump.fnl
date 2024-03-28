@@ -1,6 +1,7 @@
 .direnv/
 .envrc
 bin/
-docker/bump
+docker/Makefile
+docker/bump*
 result
 t/bump.fnl
