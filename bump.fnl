@@ -808,15 +808,17 @@ Return the result information in case of success; otherwise return `nil`."
   (if (?. info 1 :unreleased?)
       (case (?. info 2 :version)
         old (let [new (bump old)]
-              (if (release? new)
-                  #(%update/unreleased $1 $2 new)
-                  #(warn/nil "invalid version bumping: " old " -> " new)))
+              (if (or (= old new) (not (release? new)))
+                  #(warn/nil "invalid version bumping: " old " -> " new)
+                  #(%update/unreleased $1 $2 new)))
         _ (warn/nil "missing previous version string"))
 
       (prerelease? (?. info 1 :version))
       (let [old (. info 1 :version)
             new (bump old)]
-        (if (release? new)
+        (if (= old new)
+            #(warn/nil "invalid version bumping: " old " -> " new)
+            (release? new)
             #(%update/prerelease->release $1 $2 new)
             #(%update/prerelease->prerelease $1 $2 new)))
 
@@ -830,7 +832,9 @@ Return the result information in case of success; otherwise return `nil`."
       (release? (?. info 1 :version))
       (let [old (. info 1 :version)
             new (bump old)]
-        (if (release? new)
+        (if (= old new)
+            #(warn/nil "invalid version bumping: " old " -> " new)
+            (release? new)
             #(%update/release->release $1 $2 new)
             #(%update/release->prerelease $1 $2 new)))
 
