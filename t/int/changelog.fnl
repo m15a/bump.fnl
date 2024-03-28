@@ -49,9 +49,9 @@
   (test :url/pattern []
     (t.error "version string expected"
              #(url/pattern nil))
-    (t.= {:pattern "^%s*%[1%.0%.0%]:%s+<?http"}
+    (t.= {:pattern "^%s*%[v?1%.0%.0%]:%s+<?http"}
          (url/pattern "1.0.0"))
-    (t.= {:pattern "^%s*%[unreleased%]:%s+<?http"}
+    (t.= {:pattern "^%s*%[v?unreleased%]:%s+<?http"}
          (url/pattern "unreleased")))
   (test :parse-url []
     (t.error "string expected, got 10"
@@ -156,6 +156,8 @@
            (update* "t/f/c/unreleased/nodate/old.md" bump/major))
       (t.= (contents "t/f/c/unreleased/nodate/new_2.md")
            (update* "t/f/c/unreleased/nodate/old.md" bump/minor))
+      (t.= (contents "t/f/c/unreleased/nodate/new_v.md")
+           (update* "t/f/c/unreleased/nodate/old_v.md" bump/minor))
       (t.error "invalid version bumping: 1%.0%.0 %-> 1%.0%.0"
                #(update* "t/f/c/unreleased/nodate/old.md" bump/release))
       (t.error "invalid version bumping: 1%.0%.0 %-> 1%.0%.1%-dev"

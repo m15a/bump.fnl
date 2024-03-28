@@ -448,12 +448,13 @@ If you like to increment other than patch number, compose it with any other
 (fn parse [text ?init]
   "Return the first version string found in the `text`.
 
+Version string in version tag (e.g., `v1.2.3`) will also be picked up.
 Optional `?init` specifies where to start the search (default: 1).
 
 # Examples
 
 ```fennel
-(parse \" v1.0.0 1.0.0-alpha 1.0.1\") ;=> \"1.0.0-alpha\"
+(parse \" v1.0.0 1.0.0-alpha 1.0.1\") ;=> \"1.0.0\"
 (parse \"1.0.0 2.0.0\" 2) ;=> \"2.0.0\"
 ```"
   (when (not= :string (type text))
@@ -464,9 +465,14 @@ Optional `?init` specifies where to start the search (default: 1).
                  (= :number (type ?init))
                  (text:sub ?init)
                  (error "expected number, got " (view ?init)))]
-    (each [v (text:gmatch "[%w%-%+%.]+") &until found]
-      (when (version? v)
-        (set found v))))
+    (each [word (text:gmatch "[%w%-%+%.]+") &until found]
+      (case word
+        (where vtag (vtag:match "^v%d"))
+        (let [v (vtag:match "^v(.*)")]
+          (when (version? v)
+            (set found v)))
+        v (when (version? v)
+            (set found v)))))
   found)
 
 (fn gparse [text]
@@ -475,7 +481,7 @@ Optional `?init` specifies where to start the search (default: 1).
 # Example
 
 ```fennel
-(let [text \"4.5.6.7 1.2.3+m 4.3.2a 1.2.3 1.2.3-dev+a2\"]
+(let [text \"4.5.6.7 1.2.3+m 4.3.2a v1.2.3 1.2.3-dev+a2\"]
   (doto (icollect [v (gparse text)] v)
     table.sort))
 ;=> [\"1.2.3\" \"1.2.3+m\" \"1.2.3-dev+a2\"]
@@ -485,6 +491,9 @@ Optional `?init` specifies where to start the search (default: 1).
   (let [fetch (text:gmatch "[%w%-%+%.]+")]
     (fn loop []
       (case (fetch)
+        (where vtag (vtag:match "^v%d"))
+        (let [v (vtag:match "^v(.*)")]
+          (if (version? v) v (loop)))
         v (if (version? v) v (loop))
         _ nil))
     loop))
@@ -649,7 +658,7 @@ replace the old version string with the new one."
   (when (not (or (version? version)
                  (unreleased? version)))
     (error (.. "version string expected, got " (view version))))
-  {:pattern (.. "^%s*%[" (escape-regex version) "%]:%s+<?http")})
+  {:pattern (.. "^%s*%[v?" (escape-regex version) "%]:%s+<?http")})
 
 (fn changelog.parse-url [line version]
   (when (not= :string (type line))
