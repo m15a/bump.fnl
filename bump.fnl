@@ -11,25 +11,25 @@
 
 ;;;; ## Synopsis
 ;;;;
-;;;;     $ ./bump.fnl --bump 1.2.3-dev # Drop pre-release label by default.
+;;;;     $ bump 1.2.3-dev # Drop pre-release label by default.
 ;;;;     1.2.3
 ;;;;
-;;;;     $ ./bump.fnl --bump 1.2.3-dev --major # or -M
+;;;;     $ bump 1.2.3-dev --major # or -M
 ;;;;     2.0.0-dev
 ;;;;
-;;;;     $ ./bump.fnl --bump 1.2.3-dev --minor # or -m
+;;;;     $ bump 1.2.3-dev --minor # or -m
 ;;;;     1.3.0-dev
 ;;;;
-;;;;     $ ./bump.fnl --bump 1.2.3-dev --patch # or -p
+;;;;     $ bump 1.2.3-dev --patch # or -p
 ;;;;     1.2.4-dev
 ;;;;
-;;;;     $ ./bump.fnl --bump 1.2.3 --dev
+;;;;     $ bump 1.2.3 --dev
 ;;;;     1.2.4-dev
 ;;;;
-;;;;     $ ./bump.fnl --bump 1.2.3 --any-string
+;;;;     $ bump 1.2.3 --any-string
 ;;;;     1.2.4-any-string
 ;;;;
-;;;;     $ ./bump.fnl --bump bump.fnl && git diff
+;;;;     $ bump bump.fnl && git diff
 ;;;;
 ;;;; ```diff
 ;;;; diff --git a/bump.fnl b/bump.fnl
@@ -47,7 +47,7 @@
 ;;;;  
 ;;;; ```
 ;;;;
-;;;;     $ ./bump.fnl --bump CHANGELOG.md && git diff
+;;;;     $ bump CHANGELOG.md && git diff
 ;;;;
 ;;;; ```diff
 ;;;; diff --git a/CHANGELOG.md b/CHANGELOG.md
@@ -101,18 +101,25 @@
 ;;;;
 ;;;; ### Requirements
 ;;;;
-;;;; - [PUC Lua] 5.1+ or [LuaJIT]
-;;;; - [Fennel] 1.4.2+ (not tested but it might even work with older
-;;;;   versions.)
+;;;; - [PUC Lua] 5.1+ or [LuaJIT]: runtime dependency.
+;;;; - [Fennel] 1.4.2+: only for compiling to Lua script or using as a library.
+;;;;   Not tested but it might even work with older versions.
+;;;; - [GNU make]: only for compilation.
 ;;;;
 ;;;; [PUC Lua]: https://www.lua.org/
 ;;;; [LuaJIT]: https://luajit.org/
 ;;;; [Fennel]: https://fennel-lang.org/
+;;;; [GNU make]: https://www.gnu.org/software/make/
 ;;;;
 ;;;; ### Installation
 ;;;;
-;;;; Copy [`./bump.fnl`](./bump.fnl) to your favorite path. To use it as a
-;;;; library, make sure that it is on Fennel search path, or add it to
+;;;; Run `make` and then you will find a Lua executable script `bin/bump`.
+;;;; Install it anywhere:
+;;;;
+;;;;     $ make install PREFIX=$YOUR_FAVORITE_PATH
+;;;;
+;;;; To use it as a library, copy [`./bump.fnl`](./bump.fnl) to your favorite
+;;;; path. Make sure that it is on Fennel search path, or add it to
 ;;;; environment variable `$FENNEL_PATH`.
 
 ;;; BSD 3-Clause License
