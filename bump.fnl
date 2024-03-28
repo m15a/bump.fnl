@@ -827,6 +827,7 @@ Return the result information in case of success; otherwise return `nil`."
       (and (release? (?. info 1 :version))
            (not (?. info 1 :date)))
       (let [new (. info 1 :version)]
+        (warn "ignore flags and just release version: " new)
         #(%update/prerelease->release $1 $2 new))
 
       (release? (?. info 1 :version))
