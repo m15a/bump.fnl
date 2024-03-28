@@ -15,7 +15,13 @@ and this project adheres to [Semantic Versioning][2].
 - Compile to Lua executable [#8]:
   To run CLI, `./bin/bump ...` instead of `./bump.fnl --bump ...`.
 
+### Packaging
+
+- Add `docker/Dockerfile` [#9]: `make docker-image` and run
+  `docker run -t --rm -v $PWD:/work bump.fnl ARG...`.
+
 [#8]: https://todo.sr.ht/~m15a/bump.fnl/8
+[#9]: https://todo.sr.ht/~m15a/bump.fnl/9
 
 ## [0.4.1] - 2024-03-28 +0900
 

@@ -1,5 +1,6 @@
 .direnv/
 .envrc
 bin/
+docker/bump
 result
 t/bump.fnl

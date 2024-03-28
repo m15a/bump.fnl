@@ -122,6 +122,16 @@ To use it as a library, copy [`./bump.fnl`](./bump.fnl) to your favorite
 path. Make sure that it is on Fennel search path, or add it to
 environment variable `$FENNEL_PATH`.
 
+#### Docker
+
+Run `make docker-image` and then you will get `bump.fnl:latest` image.
+You might want to make a wrapper shell script:
+
+```sh
+#!/bin/sh
+exec docker run -t --rm -v $PWD:/work bump.fnl "$@"
+```
+
 
 ## API documentation
 

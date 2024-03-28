@@ -2,6 +2,7 @@ LUA ?= lua
 FENNEL ?= fennel
 FNLDOC ?= fnldoc
 FAITH ?= faith
+DOCKER ?= docker
 
 API_SRC := bump.fnl
 MAIN_SRC := bump/main.fnl
@@ -16,6 +17,8 @@ VERSION ?= $(shell $(FENNEL) -e '(. (require :bump) :version)')
 DESTDIR ?=
 PREFIX ?= /usr/local
 BINDIR = $(PREFIX)/bin
+
+DOCKER_SRC := docker/$(notdir $(EXECUTABLE))
 
 .PHONY: build
 build: $(EXECUTABLE)
@@ -33,7 +36,14 @@ install: $(EXECUTABLE)
 
 .PHONY: clean
 clean:
-	rm -f $(EXECUTABLE)
+	rm -f $(EXECUTABLE) $(DOCKER_SRC)
+
+.PHONY: docker-image
+docker-image: $(DOCKER_SRC)
+	$(DOCKER) build -t bump.fnl docker
+
+$(DOCKER_SRC): $(EXECUTABLE)
+	cp $< $@
 
 .PHONY: readme
 readme: README.md
