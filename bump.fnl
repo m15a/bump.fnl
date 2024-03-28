@@ -843,9 +843,9 @@ Return the result information in case of success; otherwise return `nil`."
     old (update old info)
     new (lines->text new)
     (catch
-      (_ ?msg) (warn/nil "failed to update changelog '" path "'"
-                         (when ?msg
-                           (unpack [": " ?msg]))))))
+      (_ ?msg) (let [msg (.. "failed to update changelog '" path "'")
+                     more (if ?msg (.. ": " ?msg) "")]
+                 (warn/nil msg more)))))
 
 (fn changelog.edit [path bump]
   "Bump version in a changelog at the `path` by using `bump` function.
