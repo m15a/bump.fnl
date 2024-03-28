@@ -823,9 +823,12 @@ Return the result information in case of success; otherwise return `nil`."
             #(%update/prerelease->prerelease $1 $2 new)))
 
       ;; If the first level-2 heading has release version but missing
-      ;; date, it may imply pre-release version.
+      ;; date AND the second level-2 heading has version and date,
+      ;; it may imply pre-release version.
       (and (release? (?. info 1 :version))
-           (not (?. info 1 :date)))
+           (not (?. info 1 :date))
+           (?. info 2 :version)
+           (?. info 2 :date))
       (let [new (. info 1 :version)]
         (warn "ignore flags and just release version: " new)
         #(%update/prerelease->release $1 $2 new))
