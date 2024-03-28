@@ -13,8 +13,12 @@ and this project adheres to [Semantic Versioning][2].
 ### Fixed
 
 - Stop bumping when old and new versions are the same [b642de3].
+- Bumping strategy inference [588af18]
+- `parse`, `gparse`: pick up version tags (e.g., `v1.2.3`) [9c801c0].
 
 [b642de3]: https://git.sr.ht/~m15a/bump.fnl/commit/b642de3
+[588af18]: https://git.sr.ht/~m15a/bump.fnl/commit/588af18
+[9c801c0]: https://git.sr.ht/~m15a/bump.fnl/commit/9c801c0
 
 ## [0.4.0] - 2024-03-26 +0900
 
