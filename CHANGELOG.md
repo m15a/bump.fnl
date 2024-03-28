@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning][2].
 [1]: https://keepachangelog.com/en/1.1.0/
 [2]: https://semver.org/spec/v2.0.0.html
 
-## [0.4.1-dev] - ???
+## [0.4.1] - 2024-03-28 +0900
 
 ### Fixed
 
@@ -80,7 +80,7 @@ and this project adheres to [Semantic Versioning][2].
 
 - Script to bump version string easily.
 
-[0.4.1-dev]: https://git.sr.ht/~m15a/bump.fnl/refs/HEAD
+[0.4.1]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.4.1
 [0.4.0]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.4.0
 [0.3.1]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.3.1
 [0.3.0]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.3.0

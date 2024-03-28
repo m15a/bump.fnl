@@ -1,4 +1,4 @@
-# Bump.fnl (0.4.1-dev)
+# Bump.fnl (0.4.1)
 
 bump.fnl - bump version and changelog.
 

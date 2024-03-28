@@ -147,7 +147,7 @@
 
 ;;;; ## API documentation
 
-(local version :0.4.1-dev)
+(local version :0.4.1)
 
 (local unpack (or table.unpack _G.unpack))
 (local {: view : dofile} (require :fennel))
