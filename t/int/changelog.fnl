@@ -1,14 +1,25 @@
 (import-macros {: testing : test} :t)
-(local {: changelog} (require :t.bump))
+(local {: changelog
+        : bump/major
+        : bump/minor
+        : bump/patch
+        : bump/release
+        : bump/prerelease}
+       (require :t.bump))
 (local {: parse-date
         : parse-heading
         : url/pattern
         : parse-url
         : analyze
         : validate
+        : update
         : changelog?}
        changelog)
 (local t (require :faith))
+
+(fn contents [path]
+  (with-open [in (io.open path)]
+    (in:read :*a)))
 
 (testing
   (test :parse-date []
@@ -139,6 +150,34 @@
              #(validate [{} {:version "0.1.1-dev"}]))
     (t.error "changelog lacks sufficient version information"
              #(validate [{} {}])))
+  (test :update/unreleased []
+    (let [update* #(update $1 (analyze $1) $2)]
+      (t.= (contents "t/f/c/unreleased/nodate/new_1.md")
+           (update* "t/f/c/unreleased/nodate/old.md" bump/major))
+      (t.= (contents "t/f/c/unreleased/nodate/new_2.md")
+           (update* "t/f/c/unreleased/nodate/old.md" bump/minor))
+      (t.error "invalid version bumping: 1%.0%.0 %-> 1%.0%.0"
+               #(update* "t/f/c/unreleased/nodate/old.md" bump/release))
+      (t.error "invalid version bumping: 1%.0%.0 %-> 1%.0%.1%-dev"
+               #(update* "t/f/c/unreleased/nodate/old.md" bump/prerelease))))
+  (test :update/prerelease []
+    (let [update* #(update $1 (analyze $1) $2)]
+      (t.= (contents "t/f/c/prerelease/nodate/new_1.md")
+           (update* "t/f/c/prerelease/nodate/old.md" bump/release))
+      (t.= (contents "t/f/c/prerelease/nodate/new_2.md")
+           (update* "t/f/c/prerelease/nodate/old.md" bump/patch))
+      (t.error "invalid version bumping: 1%.1%.0%-dev %-> 1%.1%.0%-dev"
+               #(update* "t/f/c/prerelease/nodate/old.md" #$))))
+  (test :update/release []
+    (let [update* #(update $1 (analyze $1) $2)]
+      (t.= (contents "t/f/c/release/nodate/new_1.md")
+           (update* "t/f/c/release/nodate/old.md" bump/major))
+      (t.= (contents "t/f/c/release/nodate/new_2.md")
+           (update* "t/f/c/release/nodate/old.md" bump/prerelease))
+      (t.= (contents "t/f/c/release/nodate/new_3.md")
+           (update* "t/f/c/release/nodate/old_2.md" bump/prerelease))
+      (t.error "invalid version bumping: 1%.1%.0 %-> 1%.1%.0"
+               #(update* "t/f/c/release/nodate/old.md" bump/release))))
   (test :changelog? []
     (t.= true (changelog? "CHANGELOG.md"))
     (t.= true (changelog? "CHANGELOG.markdown"))
