@@ -1,4 +1,5 @@
 .direnv/
 .envrc
+bin/
 result
 t/bump.fnl

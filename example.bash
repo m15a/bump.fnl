@@ -2,7 +2,9 @@
 
 # This script will bump version in bump.fnl and CHANGELOG.md
 # (and optionally README.md).
-# Arguments to this script are passed to ./bump/main.fnl.
+# Arguments to this script are passed to executable ./bin/bump,
+# which will be built from Fennel sources.
+#
 # Say, you want to bump major version, then try
 #
 #     $ ./example.bash --major
@@ -11,8 +13,10 @@
 
 set -euo pipefail
 
-fennel bump/main.fnl bump.fnl "$@"
-fennel bump/main.fnl CHANGELOG.md "$@"
+make build
+
+./bin/bump bump.fnl "$@"
+./bin/bump CHANGELOG.md "$@"
 
 type -fP fnldoc && make readme
 

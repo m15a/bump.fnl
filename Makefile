@@ -1,11 +1,39 @@
+LUA ?= lua
 FENNEL ?= fennel
 FNLDOC ?= fnldoc
 FAITH ?= faith
 
 API_SRC := bump.fnl
+MAIN_SRC := bump/main.fnl
 SRCS := $(API_SRC) $(shell find bump -name '*.fnl')
 TESTS := $(shell find t -name '*.fnl' ! -name 'init*' ! -name 'bump.fnl' \
 		 ! -iregex '^t/[fp]/.*')
+
+FENNEL_BUILD_FLAGS = --no-metadata --require-as-include --compile
+EXECUTABLE := bin/bump
+VERSION ?= $(shell $(FENNEL) -e '(. (require :bump) :version)')
+
+DESTDIR ?=
+PREFIX ?= /usr/local
+BINDIR = $(PREFIX)/bin
+
+.PHONY: build
+build: $(EXECUTABLE)
+
+$(EXECUTABLE): $(SRCS)
+	mkdir -p $(dir $(EXECUTABLE))
+	echo '#!/usr/bin/env $(LUA)' > $@
+	$(FENNEL) $(FENNEL_BUILD_FLAGS) $(MAIN_SRC) >> $@
+	sed -i $@ -Ee '1,+5s#^(\s*local version = ")[^"]+#\1$(VERSION)#'
+	chmod +x $@
+
+.PHONY: install
+install: $(EXECUTABLE)
+	install -pm755 -Dt $(DESTDIR)$(BINDIR) $<
+
+.PHONY: clean
+clean:
+	rm -f $(EXECUTABLE)
 
 .PHONY: readme
 readme: README.md
