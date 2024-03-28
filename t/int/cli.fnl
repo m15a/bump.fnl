@@ -1,6 +1,5 @@
 (import-macros {: testing : test} :t)
-(local {: cli} (require :t.bump))
-(local {: parse-args} cli)
+(local {: parse-args} (require :bump.cli))
 (local t (require :faith))
 
 (testing

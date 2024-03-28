@@ -4,7 +4,7 @@
         : bump/patch
         : bump/release
         : bump/prerelease}
-       (require :t.bump))
+       (require :bump))
 (local t (require :faith))
 
 (testing

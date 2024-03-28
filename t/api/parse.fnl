@@ -1,5 +1,5 @@
 (import-macros {: testing : test} :t)
-(local {: parse : gparse} (require :t.bump))
+(local {: parse : gparse} (require :bump))
 (local t (require :faith))
 
 (testing

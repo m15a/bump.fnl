@@ -5,7 +5,7 @@
         : version<=
         : version>
         : version>=}
-       (require :t.bump))
+       (require :bump))
 (local t (require :faith))
 
 (testing

@@ -1,11 +1,10 @@
 (import-macros {: testing : test} :t)
-(local {: changelog
-        : bump/major
+(local {: bump/major
         : bump/minor
         : bump/patch
         : bump/release
         : bump/prerelease}
-       (require :t.bump))
+       (require :bump))
 (local {: parse-date
         : parse-heading
         : url/pattern
@@ -14,7 +13,7 @@
         : validate
         : update
         : changelog?}
-       changelog)
+       (require :bump.changelog))
 (local t (require :faith))
 
 (fn contents [path]

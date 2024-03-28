@@ -2,7 +2,7 @@
 (local {: version?
         : release?
         : prerelease?}
-       (require :t.bump))
+       (require :bump))
 (local t (require :faith))
 
 (testing

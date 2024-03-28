@@ -1,5 +1,5 @@
 (import-macros {: testing : test} :t)
-(local {: compose : decompose} (require :t.bump))
+(local {: compose : decompose} (require :bump))
 (local t (require :faith))
 
 (testing

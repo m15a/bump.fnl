@@ -1,9 +1,9 @@
 (import-macros {: testing : test} :t)
-(local {: generic : bump/minor} (require :t.bump))
+(local {: bump/minor} (require :bump))
 (local {: require-version
         : read-version
         : edit}
-       generic)
+       (require :bump.generic))
 (local t (require :faith))
 
 (fn copy [src dst]
