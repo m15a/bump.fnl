@@ -734,43 +734,42 @@ Return the result information in case of success; otherwise return `nil`."
       (warn/nil "changelog lacks sufficient version information")
       info))
 
+(fn %new-heading [info heading-id new-version]
+  (case (?. info heading-id :format)
+    fmt (fmt:gsub "{{VERSION}}" new-version)
+    _ (error (.. (. ["1st" "2nd"] heading-id)
+                 " level-2 heading has no format"))))
+
+(fn %new-heading/date [info heading-id new-version]
+  (let [heading (%new-heading info heading-id new-version)]
+    (case (?. info heading-id :date :format)
+      dfmt (heading:gsub "{{DATE}}" (os.date dfmt))
+      _ heading)))
+
 (fn %update/unreleased [lines info new]
-  (let [heading (case (?. info 2 :format)
-                  fmt (fmt:gsub "{{VERSION}}" new)
-                  _ (error "2nd level-2 heading has no format"))
-        heading (case (?. info 2 :date :format)
-                  dfmt (heading:gsub "{{DATE}}" (os.date dfmt))
-                  _ heading)]
+  (let [heading (%new-heading/date info 2 new)
+        unreleased (. info 1)]
     (doto lines
-      (table.insert (+ (. info 1 :ln) 1) "")
-      (table.insert (+ (. info 1 :ln) 2) heading))
+      (table.insert (+ unreleased.ln 1) "")
+      (table.insert (+ unreleased.ln 2) heading))
     (case (?. info 2 :url)
       url (let [line (url.format:gsub "{{VERSION}}" new)]
             (doto lines
-             (table.insert (+ url.ln 2) line)))
+              (table.insert (+ url.ln 2) line)))
       _ lines)))
 
 (fn %update/prerelease->prerelease [lines info new]
-  (let [heading (case (?. info 1 :format)
-                  fmt (fmt:gsub "{{VERSION}}" new)
-                  _ (error "1st level-2 heading has no format"))]
-    (doto lines
-      (tset (. info 1 :ln) heading))
+  (let [heading (%new-heading info 1 new)]
+    (tset lines (. info 1 :ln) heading)
     (case (?. info 1 :url)
       url (let [line (url.format:gsub "{{VERSION}}" new)]
             (doto lines
-             (tset url.ln line)))
+              (tset url.ln line)))
       _ lines)))
 
 (fn %update/prerelease->release [lines info new]
-  (let [heading (case (?. info 2 :format)
-                  fmt (fmt:gsub "{{VERSION}}" new)
-                  _ (error "2nd level-2 headings have no format"))
-        heading (case (?. info 2 :date :format)
-                  dfmt (heading:gsub "{{DATE}}" (os.date dfmt))
-                  _ heading)]
-    (doto lines
-      (tset (. info 1 :ln) heading))
+  (let [heading (%new-heading/date info 2 new)]
+    (tset lines (. info 1 :ln) heading)
     (case-try (?. info 1 :url)
       url-1 (?. info 2 :url)
       url-2 (let [line (url-2.format:gsub "{{VERSION}}" new)]
@@ -779,35 +778,30 @@ Return the result information in case of success; otherwise return `nil`."
       (catch _ lines))))
 
 (fn %update/release->prerelease [lines info new]
-  (let [heading (case (?. info 1 :format)
-                  fmt (fmt:gsub "{{VERSION}}" new)
-                  _ (error "1st level-2 heading has format"))
-        heading (heading:gsub "{{DATE}}" "???")]
+  (let [heading (-> (%new-heading info 1 new)
+                    (string.gsub "{{DATE}}" "???"))
+        release (. info 1)]
     (doto lines
-      (table.insert (. info 1 :ln) heading)
-      (table.insert (+ (. info 1 :ln) 1) ""))
+      (table.insert release.ln heading)
+      (table.insert (+ release.ln 1) ""))
     (case (?. info 1 :url)
       url (let [line (-> url.format
                          (string.gsub "{{VERSION}}" new 1)
                          (string.gsub "v?{{VERSION}}" "HEAD"))]
             (doto lines
-             (table.insert (+ url.ln 2) line)))
+              (table.insert (+ url.ln 2) line)))
       _ lines)))
 
 (fn %update/release->release [lines info new]
-  (let [heading (case (?. info 1 :format)
-                  fmt (fmt:gsub "{{VERSION}}" new)
-                  _ (error "1st level-2 heading has no format"))
-        heading (case (?. info 1 :date :format)
-                  dfmt (heading:gsub "{{DATE}}" (os.date dfmt))
-                  _ heading)]
+  (let [heading (%new-heading/date info 1 new)
+        release (. info 1)]
     (doto lines
-      (table.insert (. info 1 :ln) heading)
-      (table.insert (+ (. info 1 :ln) 1) ""))
+      (table.insert release.ln heading)
+      (table.insert (+ release.ln 1) ""))
     (case (?. info 1 :url)
       url (let [line (url.format:gsub "{{VERSION}}" new)]
             (doto lines
-             (table.insert (+ url.ln 2) line)))
+              (table.insert (+ url.ln 2) line)))
       _ lines)))
 
 (fn %select-updater [info bump]
@@ -833,13 +827,13 @@ Return the result information in case of success; otherwise return `nil`."
       (let [new (. info 1 :version)]
         #(%update/prerelease->release $1 $2 new))
 
-      ;; Default case: 1st level-2 heading has previous release version
       (release? (?. info 1 :version))
       (let [old (. info 1 :version)
             new (bump old)]
         (if (release? new)
             #(%update/release->release $1 $2 new)
             #(%update/release->prerelease $1 $2 new)))
+
       (error "failed to select updater")))
 
 (fn changelog.update [path info bump]
