@@ -8,22 +8,26 @@
 (local generic (require :bump.generic))
 (local changelog (require :bump.changelog))
 
-(fn help []
-  (let [msg (.. "USAGE: " (. arg 0)
+(fn show-help [stdout?]
+  (let [out (if stdout? io.stdout io.stderr)
+        msg (.. "USAGE: " (. arg 0)
+                " [--help|-h]"
                 " [--major|-M]"
                 " [--minor|-m]"
                 " [--patch|-p]"
                 " [--dev|--alpha|--any-string]"
-                " VERSION|FILE" "\n")]
+                " VERSION|FILE")]
     (if _G._BUMPFNL_DEBUG
         (error msg)
         (do
-          (io.stderr:write msg)
-          (os.exit 1)))))
+          (out:write msg "\n")
+          (os.exit (if stdout? 0 1))))))
 
 (fn parse-args [args]
   (-> (accumulate [config {} _ arg (ipairs args)]
         (case arg
+          :--help  (show-help :stdout)
+          :-h      (show-help :stdout)
           :--major (update! config :bump #(<<? bump/major $))
           :-M      (update! config :bump #(<<? bump/major $))
           :--minor (update! config :bump #(<<? bump/minor $))
@@ -33,8 +37,8 @@
           (where flag (flag:match "^%-%-[^%-]+.*"))
           (let [label (flag:match "^%-%-([^%-]+.*)")]
             (update! config :bump #(<<? #(bump/prerelease $ label) $)))
-          any (update! config :version|file #(if $ (help) any))))
-      (#(if (. $ :version|file) $ (help)))
+          any (update! config :version|file #(if $ (show-help) any))))
+      (#(if (. $ :version|file) $ (show-help)))
       (update! :bump #(or $ bump/release))))
 
 (fn bump/version [bump version]
@@ -48,7 +52,7 @@
     true (os.exit)
     _ (os.exit 1)))
 
-{: help
+{: show-help
  : parse-args
  : bump/version
  : bump/file}
