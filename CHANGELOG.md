@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning][2].
 
 ## [0.5.0-dev] - ???
 
+### Changed
+
+- Compile to Lua executable [#8]:
+  To run CLI, `./bin/bump ...` instead of `./bump.fnl --bump ...`.
+
+[#8]: https://todo.sr.ht/~m15a/bump.fnl/8
+
 ## [0.4.1] - 2024-03-28 +0900
 
 ### Fixed
