@@ -271,7 +271,7 @@ Return an iterator that returns version strings in the `text` one by one.
 #### Example
 
 ```fennel
-(let [text "4.5.6.7 1.2.3+m 4.3.2a 1.2.3 1.2.3-dev+a2"]
+(let [text "4.5.6.7 1.2.3+m 4.3.2a v1.2.3 1.2.3-dev+a2"]
   (doto (icollect [v (gparse text)] v)
     table.sort))
 ;=> ["1.2.3" "1.2.3+m" "1.2.3-dev+a2"]
@@ -285,12 +285,13 @@ Return an iterator that returns version strings in the `text` one by one.
 
 Return the first version string found in the `text`.
 
+Version string in version tag (e.g., `v1.2.3`) will also be picked up.
 Optional `?init` specifies where to start the search (default: 1).
 
 #### Examples
 
 ```fennel
-(parse " v1.0.0 1.0.0-alpha 1.0.1") ;=> "1.0.0-alpha"
+(parse " v1.0.0 1.0.0-alpha 1.0.1") ;=> "1.0.0"
 (parse "1.0.0 2.0.0" 2) ;=> "2.0.0"
 ```
 
