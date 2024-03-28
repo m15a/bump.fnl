@@ -61,7 +61,7 @@
            :format "## [{{VERSION}}] - {{DATE}}"
            :url {:ln 20
                  :format "[{{VERSION}}]: https://a.com/b/c/refs/v{{VERSION}}"}}]
-         (analyze "t/f/c/unreleased/base.md"))
+         (analyze "t/f/c/unreleased/base/old.md"))
     (t.= [{:ln 5
            :unreleased? true
            :url {:ln 19}}
@@ -70,14 +70,14 @@
            :format "## [{{VERSION}}]"
            :url {:ln 20
                  :format "[{{VERSION}}]: https://a.com/b/c/refs/v{{VERSION}}"}}]
-         (analyze "t/f/c/unreleased/nodate.md"))
+         (analyze "t/f/c/unreleased/nodate/old.md"))
     (t.= [{:ln 5
            :unreleased? true}
           {:ln 11
            :version "1.0.0"
            :date {:format "%Y-%m-%d"}
            :format "## {{VERSION}} ({{DATE}})"}]
-         (analyze "t/f/c/unreleased/nourl.md")))
+         (analyze "t/f/c/unreleased/nourl/old.md")))
   (test :analyze/prerelease []
     (t.= [{:ln 5
            :version "1.1.0-dev"
@@ -90,7 +90,7 @@
            :format "## [{{VERSION}}] - {{DATE}}"
            :url {:ln 20
                  :format "[{{VERSION}}]: https://a.com/b/c/refs/v{{VERSION}}"}}]
-         (analyze "t/f/c/prerelease/base.md"))
+         (analyze "t/f/c/prerelease/base/old.md"))
     (t.= [{:ln 5
            :version "1.1.0-dev"
            :format "## [{{VERSION}}]"
@@ -101,7 +101,7 @@
            :format "## [{{VERSION}}]"
            :url {:ln 20
                  :format "[{{VERSION}}]: https://a.com/b/c/refs/v{{VERSION}}"}}]
-         (analyze "t/f/c/prerelease/nodate.md"))
+         (analyze "t/f/c/prerelease/nodate/old.md"))
     (t.= [{:ln 5
            :version "1.1.0-dev"
            :format "## {{VERSION}} (???)"}
@@ -109,7 +109,7 @@
            :version "1.0.0"
            :date {:format "%Y-%m-%d"}
            :format "## {{VERSION}} ({{DATE}})"}]
-         (analyze "t/f/c/prerelease/nourl.md")))
+         (analyze "t/f/c/prerelease/nourl/old.md")))
   (test :analyze/release []
     (t.= [{:ln 5
            :version "1.1.0"
@@ -118,20 +118,20 @@
            :url {:ln 11
                  :format "[{{VERSION}}]: https://a.com/b/c/refs/v{{VERSION}}"}}
           {}]
-         (analyze "t/f/c/release/base.md"))
+         (analyze "t/f/c/release/base/old.md"))
     (t.= [{:ln 5
            :version "1.1.0"
            :format "## [{{VERSION}}]"
            :url {:ln 11
                  :format "[{{VERSION}}]: https://a.com/b/c/refs/v{{VERSION}}"}}
           {}]
-         (analyze "t/f/c/release/nodate.md"))
+         (analyze "t/f/c/release/nodate/old.md"))
     (t.= [{:ln 5
            :version "1.1.0"
            :date {:format "%Y-%m-%d"}
            :format "## {{VERSION}} / {{DATE}}"}
           {}]
-         (analyze "t/f/c/release/nourl.md")))
+         (analyze "t/f/c/release/nourl/old.md")))
   (test :validate []
     (t.error "invalid changelog: 2nd heading has pre%-release version"
              #(validate [{} {:unreleased? true}]))
