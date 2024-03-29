@@ -2,9 +2,8 @@
 (local {: gparse : version?} (require :bump))
 (local {: replace
         : read-contents
-        : write-contents
-        : warn
-        : warn/nil} (require :bump.utils))
+        : write-contents} (require :bump.utils))
+(import-macros {: warn : warn/nil} :bump.utils)
 
 (fn parse/one [text]
   "Find the one true version in the `text`; otherwise return `nil` and message."

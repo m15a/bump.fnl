@@ -1,14 +1,14 @@
 (import-macros {: testing : test} :t)
-(local {: version=
-        : version<>
-        : version<
-        : version<=
-        : version>
-        : version>=}
-       (require :bump))
 (local t (require :faith))
 
 (testing
+  (local {: version=
+          : version<>
+          : version<
+          : version<=
+          : version>
+          : version>=}
+         (require :bump))
   (test :version< []
     (t.= false (version< :1.1.0 :1.1.0))
     (t.= false (version< :1.1.0+001 :1.1.0+002))

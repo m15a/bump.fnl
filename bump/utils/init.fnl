@@ -42,18 +42,6 @@
     :string (pick-values 1 (text:gsub (escape-regex old) new))
     _ (error "string expected, got " (view text))))
 
-(fn warn [...]
-  (when (not _G._BUMPFNL_DEBUG)
-    (io.stderr:write "bump.fnl: " ...)
-    (io.stderr:write "\n")))
-
-(fn warn/nil [...]
-  (if _G._BUMPFNL_DEBUG
-      (error (table.concat [...] ""))
-      (do
-        (warn ...)
-        nil)))
-
 {: <<?
  : merge!
  : update!
@@ -62,6 +50,4 @@
  : read-lines
  : lines->text
  : write-contents
- : replace
- : warn
- : warn/nil}
+ : replace}

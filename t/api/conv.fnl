@@ -1,8 +1,8 @@
 (import-macros {: testing : test} :t)
-(local {: compose : decompose} (require :bump))
 (local t (require :faith))
 
 (testing
+  (local {: compose : decompose} (require :bump))
   (test :decompose []
     (t.= {:major 0 :minor 1 :patch 0 :prerelease :dev :build :001}
          (decompose "0.1.0-dev+001"))

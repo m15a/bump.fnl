@@ -1,13 +1,13 @@
 (import-macros {: testing : test} :t)
-(local {: bump/major
-        : bump/minor
-        : bump/patch
-        : bump/release
-        : bump/prerelease}
-       (require :bump))
 (local t (require :faith))
 
 (testing
+  (local {: bump/major
+          : bump/minor
+          : bump/patch
+          : bump/release
+          : bump/prerelease}
+         (require :bump))
   (test :bump/major []
     (t.= "1.0.0"
          (bump/major "0.9.28"))

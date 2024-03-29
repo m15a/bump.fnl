@@ -10,4 +10,19 @@
        (var ,index 1)
        ,each-form)))
 
-{: each/index}
+(fn warn [& msgs]
+  (when (not _G._BUMPFNL_DEBUG)
+    (let [warn `(io.stderr:write "bump.fnl: " ,(unpack msgs))]
+      (table.insert warn "\n")
+      warn)))
+
+(fn warn/nil [& msgs]
+  (if _G._BUMPFNL_DEBUG
+      `(error (table.concat ,msgs ""))
+      `(do
+         (warn ,(unpack msgs))
+         nil)))
+
+{: each/index
+ : warn
+ : warn/nil}

@@ -1,10 +1,6 @@
 (import-macros {: testing : test} :t)
-(local {: bump/minor} (require :bump))
-(local {: require-version
-        : read-version
-        : edit}
-       (require :bump.generic))
 (local t (require :faith))
+(local {: bump/minor} (require :bump))
 
 (fn copy [src dst]
   (with-open [in (io.open src)
@@ -16,6 +12,10 @@
     (in:read :*a)))
 
 (testing
+  (local {: require-version
+          : read-version
+          : edit}
+         (require :bump.generic))
   (test :require-version []
     (t.= "1.0.0" (require-version "t/f/version-exposed.fnl")) 
     (t.error "invalid version "

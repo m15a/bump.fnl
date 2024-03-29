@@ -8,11 +8,9 @@
         : merge!
         : read-lines
         : lines->text
-        : write-contents
-        : warn
-        : warn/nil}
+        : write-contents}
        (require :bump.utils))
-(import-macros {: each/index} :bump.utils)
+(import-macros {: each/index : warn : warn/nil} :bump.utils)
 
 (fn unreleased? [x]
   (if (and (= :string (type x))

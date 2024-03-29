@@ -1,8 +1,8 @@
 (import-macros {: testing : test} :t)
-(local {: parse : gparse} (require :bump))
 (local t (require :faith))
 
 (testing
+  (local {: parse : gparse} (require :bump))
   (test :parse []
     (t.= "1.0.0"
          (parse " v1.0.0 1.0.0-alpha 1.0.1"))

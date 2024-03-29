@@ -8,9 +8,15 @@
 (local generic (require :bump.generic))
 (local changelog (require :bump.changelog))
 
+(macro print/exit [msg stdout?]
+  (if _G._BUMPFNL_DEBUG
+      `(error ,msg)
+      `(let [out# (if ,stdout? io.stdout io.stderr)]
+         (out#:write ,msg "\n")
+         (os.exit (if ,stdout? 0 1)))))
+
 (fn show-help [stdout?]
-  (let [out (if stdout? io.stdout io.stderr)
-        msg (.. "USAGE: " (. arg 0)
+  (let [msg (.. "USAGE: " (. arg 0)
                 " [--help|-h]"
                 " [--version|-v]"
                 " [--major|-M]"
@@ -18,11 +24,7 @@
                 " [--patch|-p]"
                 " [--dev|--alpha|--any-string]"
                 " VERSION|FILE")]
-    (if _G._BUMPFNL_DEBUG
-        (error msg)
-        (do
-          (out:write msg "\n")
-          (os.exit (if stdout? 0 1))))))
+    (print/exit msg stdout?)))
 
 (fn show-version []
   (let [{: version} (require :bump)]
