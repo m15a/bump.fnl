@@ -203,7 +203,7 @@
 
 ;;;; ## API documentation
 
-(local version :0.5.0-dev)
+(local version :0.5.0)
 
 (local {: view} (require :fennel))
 
