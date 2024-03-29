@@ -19,9 +19,13 @@ and this project adheres to [Semantic Versioning][2].
 
 - Add `docker/Dockerfile` [#9]: `make docker-image` and run
   `docker run -t --rm -v $PWD:/work bump.fnl ARG...`.
+- Add Nix package [#10]: in the overlay, the package can be found at
+  attribute `pkgs.bumpfnl`. To try it one time, run
+  `nix run sourcehut:~m15a/bump.fnl -- --help`
 
 [#8]: https://todo.sr.ht/~m15a/bump.fnl/8
 [#9]: https://todo.sr.ht/~m15a/bump.fnl/9
+[#10]: https://todo.sr.ht/~m15a/bump.fnl/10
 
 ## [0.4.1] - 2024-03-28 +0900
 

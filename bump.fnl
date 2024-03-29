@@ -131,6 +131,45 @@
 ;;;; #!/bin/sh
 ;;;; exec docker run -t --rm -v $PWD:/work bump.fnl "$@"
 ;;;; ```
+;;;; 
+;;;; #### Nix
+;;;; 
+;;;; To try `bump.fnl` one time, run
+;;;; 
+;;;;     $ nix run sourcehut:~m15a/bump.fnl -- --help
+;;;; 
+;;;; To use it as an overlay,
+;;;; 
+;;;; ```nix
+;;;; {
+;;;;   inputs = {
+;;;;     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+;;;;     flake-utils.url = "github:numtide/flake-utils";
+;;;;     bumpfnl.url = "sourcehut:~m15a/bumpfnl/main";
+;;;;     ...
+;;;;   };
+;;;;   ...
+;;;;   outputs = inputs @ { self, nixpkgs, flake-utils, ... }:
+;;;;     flake-utils.lib.eachDefaultSystem (system:
+;;;;       let
+;;;;         pkgs = import nixpkgs {
+;;;;           inherit system;
+;;;;           overlays = [
+;;;;             ...
+;;;;             inputs.bumpfnl.overlays.default
+;;;;           ];
+;;;;         };
+;;;;       in
+;;;;       {
+;;;;         devShells.default = {
+;;;;           buildInputs = [
+;;;;             ...
+;;;;             pkgs.bumpfnl
+;;;;           ];
+;;;;         };
+;;;;       });
+;;;; }
+;;;; ```
 
 ;;; BSD 3-Clause License
 ;;;
