@@ -23,12 +23,14 @@ DOCKER_SRCS := $(foreach s,$(SRCS) Makefile,docker/$(s))
 .PHONY: build
 build: $(EXECUTABLE)
 
-$(EXECUTABLE): $(SRCS)
-	mkdir -p $(dir $(EXECUTABLE))
+$(EXECUTABLE): $(SRCS) $(dir $(EXECUTABLE))
 	echo '#!/usr/bin/env $(LUA)' > $@
 	$(FENNEL) $(FENNEL_BUILD_FLAGS) $(MAIN_SRC) >> $@
 	sed -i $@ -Ee '1,+5s#^(\s*local version = ")[^"]+#\1$(VERSION)#'
 	chmod +x $@
+
+$(dir $(EXECUTABLE)):
+	mkdir -p $@
 
 .PHONY: install
 install: $(EXECUTABLE)
@@ -52,6 +54,12 @@ docker/bump/%.fnl: bump/%.fnl docker/bump
 	cp $< $@
 
 docker/bump:
+	mkdir -p $@
+
+docker/bump/utils/%.fnl: bump/utils/%.fnl docker/bump/utils
+	cp $< $@
+
+docker/bump/utils:
 	mkdir -p $@
 
 .PHONY: readme
