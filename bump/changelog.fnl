@@ -12,15 +12,7 @@
         : warn
         : warn/nil}
        (require :bump.utils))
-
-(macro each/index [bindings & body]
-  (let [unpack (or table.unpack _G.unpack)
-        index (table.remove bindings 1)
-        each-form `(each ,bindings ,(unpack body))]
-    (table.insert each-form `(set ,index (+ ,index 1)))
-    `(do
-       (var ,index 1)
-       ,each-form)))
+(import-macros {: each/index} :bump.utils)
 
 (fn unreleased? [x]
   (if (and (= :string (type x))
