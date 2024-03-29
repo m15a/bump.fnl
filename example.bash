@@ -15,12 +15,18 @@ set -euo pipefail
 
 make build
 
-./bin/bump bump.fnl "$@"
-./bin/bump CHANGELOG.md "$@"
+files=(bump.fnl CHANGELOG.md nix/versions.json)
+for file in "${files[@]}"
+do
+    ./bin/bump "$file" "$@"
+done
+git add "${files[@]}"
 
-type -fP fnldoc && make readme
-
-git add bump.fnl README.md CHANGELOG.md
+if type -fP fnldoc
+then
+    make readme
+    git add README.md
+fi
 
 version="$(fennel -e '(. (require :bump) :version)')"
 is_release="$(fennel -e '(let [b (require :bump)] (b.release? b.version))')"
