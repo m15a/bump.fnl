@@ -41,7 +41,10 @@
 
         apps = with flake-utils.lib;
           builtins.mapAttrs
-            (name: _: mkApp { drv = self.packages.${system}.${name}; })
+            (name: _: mkApp rec {
+              drv = self.packages.${system}.${name};
+              name = drv.meta.mainProgram or name;
+            })
             packages;
 
         checks = packages;

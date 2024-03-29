@@ -27,6 +27,6 @@ stdenv.mkDerivation rec {
     description = "A CLI tool to bump version and update changelog.";
     homepage = "https://sr.ht/~m15a/bump.fnl";
     license = licenses.bsd3;
-    mainProgram = pname;
+    mainProgram = "bump";
   };
 }
