@@ -1,6 +1,6 @@
 # Bump.fnl (0.6.0-dev)
 
-bump.fnl - bump version and changelog.
+bump.fnl - bump version and update changelog.
 
 <https://sr.ht/~m15a/bump.fnl>
 
@@ -76,35 +76,38 @@ index a5a8b31..92c350a 100644
 
 ## Description
 
-`bump.fnl` bumps version string and changelog. You can use it in
+`bump.fnl` bumps version string and update changelog. You can use it in
 command line as shown in [Synopsis](#synopsis): it can
 
 - bump command line argument version string,
 - bump version string contained in any file, or
-- edit Markdown changelog according to intended version bumping
-  (**experimental feature**).
+- update Markdown changelog according to intended version bumping
+  (**experimental feature**). It should work for any style similar
+  to [keep a changelog], at least a style like
+  [`./CHANGELOG.md`](./CHANGELOG.md).
 
 See an example usage [`./example.bash`](./example.bash).
 
 It is also a library for general-purpose [SemVer] version string
 manipulation. It provides functions to
 
-- compose and decompose version string from/to table containing
-  major, minor, patch numbers, prerelease label, and build meta tag;
-- compare and query version strings;
+- compose/decompose version string from/to table containing major, minor,
+  and patch numbers, prerelease label, and build meta tag;
+- compare and query about version strings;
 - bump version string; and
 - parse text to search for version strings.
 
 See [API documentation](#api-documentation) for more details.
 
+[keep a changelog]: https://keepachangelog.com/en/1.1.0/
 [SemVer]: https://semver.org/
 
 ### Requirements
 
 - [PUC Lua] 5.1+ or [LuaJIT]: runtime dependency.
-- [Fennel] 1.4.2+: only for compiling to Lua script or using as a library.
-  Not tested but it might even work with older versions.
-- [GNU make]: only for compilation.
+- [Fennel] 1.4.2+: required only for compiling to Lua script or for using
+  it as a library. Not tested but it might even work with older versions.
+- [GNU make]: to run build tasks.
 
 [PUC Lua]: https://www.lua.org/
 [LuaJIT]: https://luajit.org/
@@ -113,14 +116,16 @@ See [API documentation](#api-documentation) for more details.
 
 ### Installation
 
+#### Fennel users
+
 Run `make` and then you will find a Lua executable script `bin/bump`.
 Install it anywhere:
 
     $ make install PREFIX=$YOUR_FAVORITE_PATH
 
-To use it as a library, copy [`./bump.fnl`](./bump.fnl) to your favorite
-path. Make sure that it is on Fennel search path, or add it to
-environment variable `$FENNEL_PATH`.
+To use it as a library, copy [`./bump.fnl`](./bump.fnl) into your project.
+Make sure that it is on Fennel search path, or add it to environment
+variable `$FENNEL_PATH`.
 
 #### Docker
 
