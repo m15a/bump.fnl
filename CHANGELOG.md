@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning][2].
 [1]: https://keepachangelog.com/en/1.1.0/
 [2]: https://semver.org/spec/v2.0.0.html
 
+## [0.5.1] - 2024-03-29 +0900
+
 ### Fixed
 
 - Nix: infinite recursion in app derivation [00ef077].
@@ -105,6 +107,7 @@ and this project adheres to [Semantic Versioning][2].
 
 - Script to bump version string easily.
 
+[0.5.1]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.5.1
 [0.5.0]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.5.0
 [0.4.1]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.4.1
 [0.4.0]: https://git.sr.ht/~m15a/bump.fnl/refs/v0.4.0
