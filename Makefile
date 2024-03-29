@@ -69,6 +69,7 @@ check: test doctest
 
 .PHONY: test
 test: $(SRCS) $(TESTS)
+	@$(FENNEL) --version
 	$(FAITH) --tests $(subst /,.,$(patsubst %.fnl,%,$(TESTS)))
 
 .PHONY: doctest
