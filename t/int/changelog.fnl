@@ -1,26 +1,27 @@
 (import-macros {: testing : test} :t)
 (local t (require :faith))
+(set _G._BUMPFNL_DEBUG true)
 (local {: bump/major
         : bump/minor
         : bump/patch
         : bump/release
         : bump/prerelease}
        (require :bump))
+(local {: parse-date
+        : parse-heading
+        : url/pattern
+        : parse-url
+        : analyze
+        : validate
+        : update
+        : changelog?}
+       (require :bump.changelog))
 
 (fn contents [path]
   (with-open [in (io.open path)]
     (in:read :*a)))
 
 (testing
-  (local {: parse-date
-          : parse-heading
-          : url/pattern
-          : parse-url
-          : analyze
-          : validate
-          : update
-          : changelog?}
-         (require :bump.changelog))
   (test :parse-date []
     (t.error "string expected, got nil"
              #(parse-date nil))

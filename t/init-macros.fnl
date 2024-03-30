@@ -3,7 +3,6 @@
 (local unpack (or table.unpack _G.unpack))
 
 (fn testing/setup [setups & tests]
-  (set _G._BUMPFNL_DEBUG true)
   `(let [out# (collect [k# v# (pairs ,setups)] k# v#)]
      (each [_# test# (ipairs ,tests)]
        (each [tname# tfn# (pairs test#)]

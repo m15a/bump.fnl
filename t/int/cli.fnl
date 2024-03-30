@@ -1,8 +1,9 @@
 (import-macros {: testing : test} :t)
 (local t (require :faith))
+(set _G._BUMPFNL_DEBUG true)
+(local {: parse-args} (require :bump.cli))
 
 (testing
-  (local {: parse-args} (require :bump.cli))
   (test :parse-args []
     (t.error "USAGE: "
              #(parse-args []))

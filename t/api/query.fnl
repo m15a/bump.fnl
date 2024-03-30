@@ -1,11 +1,8 @@
 (import-macros {: testing : test} :t)
 (local t (require :faith))
+(local {: version? : release? : prerelease?} (require :bump))
 
 (testing
-  (local {: version?
-          : release?
-          : prerelease?}
-         (require :bump))
   (test :version? []
     (t.= nil (let [(_ ?rest) (version? "1.0.0")] ?rest))
     (t.= nil (let [(_ ?rest) (version? "1.0.0a")] ?rest))
