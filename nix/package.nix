@@ -10,18 +10,16 @@ stdenv.mkDerivation rec {
   inherit version src;
 
   nativeBuildInputs = [
-    fennel.lua
     fennel
+  ];
+  buildInputs = [
+    fennel.lua
   ];
 
   makeFlags = [
     "VERSION=${version}"
     "PREFIX=$(out)"
   ];
-
-  postBuild = ''
-    patchShebangs .
-  '';
 
   meta = with lib; {
     description = "A CLI tool to bump version and update changelog.";
