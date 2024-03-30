@@ -65,7 +65,7 @@
           default =
             let
               fennel = pkgs.fennel-unstable-luajit;
-              faith = pkgs.faith-unstable;
+              faith = pkgs.faith-no-compiler-sandbox;
             in
             pkgs.mkShell {
               buildInputs = [

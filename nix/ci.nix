@@ -18,7 +18,7 @@ let
       name = "ci-check-shell-${fennelName}";
       value = final.callPackage mkCICheckShell {
         fennel = final.${fennelName};
-        faith = final.faith-unstable;
+        faith = final.faith-no-compiler-sandbox;
       };
     };
 
@@ -33,7 +33,17 @@ let
       };
 in
 
-buildPackageSet {
+{
+  faith-no-compiler-sandbox =
+    prev.faith-unstable.overrideAttrs (old: {
+        postBuild = (old.postBuild or "") + ''
+          sed -Ei bin/faith \
+              -e '1s|(fennel)|-S \1 --no-compiler-sandbox|'
+        '';
+        dontFixup = true;
+      });
+
+} // buildPackageSet {
   inherit builder;
   args = cartesianProductOfSets {
     fennelVariant = [
