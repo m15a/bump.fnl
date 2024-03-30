@@ -15,6 +15,6 @@ in {
     else
       version' + optionalString (shortRev != null) "-${shortRev}";
     src = ../.;
-    fennel = final.fennel-luajit;
+    lua = final.luajit;
   };
 }

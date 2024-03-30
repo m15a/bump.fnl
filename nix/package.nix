@@ -1,11 +1,11 @@
-{ version, src, stdenv, lib, fennel }:
+{ version, src, stdenv, lib, lua }:
 
 stdenv.mkDerivation rec {
   pname = "bumpfnl";
   inherit version src;
 
-  nativeBuildInputs = [ fennel ];
-  buildInputs = [ fennel.lua ];
+  nativeBuildInputs = [ lua.pkgs.fennel ];
+  buildInputs = [ lua ];
 
   makeFlags = [ "VERSION=${version}" "PREFIX=$(out)" ];
 
