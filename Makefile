@@ -7,8 +7,8 @@ DOCKER ?= docker
 API_SRC := bump.fnl
 MAIN_SRC := bump/main.fnl
 SRCS := $(API_SRC) $(shell find bump -name '*.fnl')
-TESTS := $(shell find t -name '*.fnl' ! -name 'init*' ! -name 'bump.fnl' \
-		 ! -regex '^t/[fp]/.*')
+TESTS := $(shell find t -regex '^t/api/[^/]+\.fnl$$' \
+		 -o -regex '^t/int/[^/]+\.fnl$$')
 
 FENNEL_BUILD_FLAGS = --no-metadata --require-as-include --compile
 EXECUTABLE := bin/bump
