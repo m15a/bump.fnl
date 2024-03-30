@@ -56,22 +56,12 @@
             ci-check-shell-fennel-unstable-lua5_4
             ci-check-shell-fennel-unstable-luajit;
 
-          default = let
-            fennel = pkgs.fennel-unstable-luajit;
-            faith = pkgs.faith-no-compiler-sandbox;
-          in pkgs.mkShell {
-            buildInputs = [
-              fennel
-              fennel.lua
-              faith
-              pkgs.fnldoc
-              pkgs.fennel-ls-unstable
-              pkgs.fnlfmt-unstable
-              pkgs.gnumake
-              pkgs.nixfmt
-            ] ++ (with fennel.lua.pkgs; [ readline ]);
-            FENNEL_PATH = "${faith}/bin/?";
-          };
+          default = let fennelName = "fennel-unstable-luajit";
+          in pkgs."ci-check-shell-${fennelName}".overrideAttrs (old: {
+            nativeBuildInputs = old.nativeBuildInputs
+              ++ [ pkgs.fennel-ls-unstable pkgs.fnlfmt-unstable pkgs.nixfmt ]
+              ++ (with pkgs.${fennelName}.lua.pkgs; [ readline ]);
+          });
         };
       });
 }
