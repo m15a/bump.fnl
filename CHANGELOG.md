@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning][2].
 
 ## [0.6.0-dev] - ???
 
+### Fixed
+
+- Nix: failed patchShebangs [27f0779].
+
+[27f0779]: https://git.sr.ht/~m15a/bump.fnl/commit/27f0779
+
 ## [0.5.1] - 2024-03-29 +0900
 
 ### Fixed
