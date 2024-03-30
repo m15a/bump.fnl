@@ -1,5 +1,3 @@
-#!/usr/bin/env fennel
-
 ;;;; bump.fnl - bump version and update changelog.
 ;;;;
 ;;;; <https://sr.ht/~m15a/bump.fnl>
