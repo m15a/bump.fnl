@@ -18,7 +18,8 @@ DESTDIR ?=
 PREFIX ?= /usr/local
 BINDIR = $(PREFIX)/bin
 
-DOCKER_SRCS := $(foreach s,$(SRCS) Makefile,docker/$(s))
+DOCKERDIR := docker
+DOCKER_SRCS := $(foreach s,$(SRCS) Makefile,$(DOCKERDIR)/$(s))
 
 .PHONY: build
 build: $(EXECUTABLE)
@@ -42,24 +43,17 @@ clean:
 
 .PHONY: docker-image
 docker-image: $(DOCKER_SRCS)
-	$(DOCKER) build -t bump.fnl docker
+	$(DOCKER) build -t bump.fnl $(DOCKERDIR)
 
-docker/Makefile: Makefile
+$(DOCKERDIR)/%: %
 	cp $< $@
-
-docker/%.fnl: %.fnl
+$(DOCKERDIR)/bump/%: bump/% $(DOCKERDIR)/bump
 	cp $< $@
-
-docker/bump/%.fnl: bump/%.fnl docker/bump
+$(DOCKERDIR)/bump/utils/%: bump/utils/% $(DOCKERDIR)/bump/utils
 	cp $< $@
-
-docker/bump:
+$(DOCKERDIR)/bump:
 	mkdir -p $@
-
-docker/bump/utils/%.fnl: bump/utils/%.fnl docker/bump/utils
-	cp $< $@
-
-docker/bump/utils:
+$(DOCKERDIR)/bump/utils:
 	mkdir -p $@
 
 .PHONY: readme
