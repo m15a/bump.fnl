@@ -1,4 +1,4 @@
-# Bump.fnl (0.6.0-dev)
+# Bump.fnl (0.5.2)
 
 bump.fnl - bump version and update changelog.
 
@@ -486,5 +486,5 @@ Copyright (c) 2024 NACAMURA Mitsuhiro
 
 License: [BSD 3-clause](./LICENSE)
 
-<!-- Generated with Fnldoc 1.1.0-dev-943d87c
+<!-- Generated with Fnldoc 1.1.0-dev-2169d56
      https://sr.ht/~m15a/fnldoc/ -->
