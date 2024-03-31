@@ -150,7 +150,7 @@ To use it as an overlay,
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    bumpfnl.url = "sourcehut:~m15a/bumpfnl/main";
+    bumpfnl.url = "sourcehut:~m15a/bump.fnl/main";
     ...
   };
   ...
