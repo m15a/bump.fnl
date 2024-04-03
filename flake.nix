@@ -46,18 +46,18 @@
 
         devShells = {
           inherit (pkgs)
-            ci-check-shell-fennel-lua5_1 ci-check-shell-fennel-lua5_2
-            ci-check-shell-fennel-lua5_3 ci-check-shell-fennel-lua5_4
-            ci-check-shell-fennel-luajit
+            ci-check-fennel-lua5_1 ci-check-fennel-lua5_2
+            ci-check-fennel-lua5_3 ci-check-fennel-lua5_4
+            ci-check-fennel-luajit
 
-            ci-check-shell-fennel-unstable-lua5_1
-            ci-check-shell-fennel-unstable-lua5_2
-            ci-check-shell-fennel-unstable-lua5_3
-            ci-check-shell-fennel-unstable-lua5_4
-            ci-check-shell-fennel-unstable-luajit;
+            ci-check-fennel-unstable-lua5_1
+            ci-check-fennel-unstable-lua5_2
+            ci-check-fennel-unstable-lua5_3
+            ci-check-fennel-unstable-lua5_4
+            ci-check-fennel-unstable-luajit;
 
           default = let fennelName = "fennel-unstable-luajit";
-          in pkgs."ci-check-shell-${fennelName}".overrideAttrs (old: {
+          in pkgs."ci-check-${fennelName}".overrideAttrs (old: {
             nativeBuildInputs = old.nativeBuildInputs
               ++ [ pkgs.fennel-ls-unstable pkgs.fnlfmt-unstable pkgs.nixfmt ]
               ++ (with pkgs.${fennelName}.lua.pkgs; [ readline ]);

@@ -12,7 +12,7 @@ let
       else
         "fennel-${fennelVariant}-${luaVariant}";
     in {
-      name = "ci-check-shell-${fennelName}";
+      name = "ci-check-${fennelName}";
       value = final.callPackage mkCICheckShell {
         fennel = final.${fennelName};
         faith = final.faith-no-compiler-sandbox;
