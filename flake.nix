@@ -4,11 +4,14 @@
     flake-utils.url = "github:numtide/flake-utils";
     fennel-tools = {
       url = "github:m15a/flake-fennel-tools";
+      inputs.flake-utils.follows = "flake-utils";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     fnldoc = {
       url = "sourcehut:~m15a/fnldoc";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+      inputs.fennel-tools.follows = "fennel-tools";
     };
   };
 
