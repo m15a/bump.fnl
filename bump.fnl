@@ -129,10 +129,6 @@
 ;;;; Install it anywhere:
 ;;;;
 ;;;;     $ make install PREFIX=$YOUR_FAVORITE_PATH
-;;;;
-;;;; To use it as a Fennel library, copy [`./bump.fnl`](./bump.fnl) into
-;;;; your project. Make sure that it is on Fennel search path, or add it
-;;;; to environment variable `$FENNEL_PATH`.
 
 ;;;; #### Docker
 ;;;;
@@ -188,6 +184,11 @@
 ;;;; ```
 ;;;;
 ;;;; [Nix]: https://nixos.org/
+
+;;;; #### Use it as a Fennel library
+;;;;
+;;;; Copy [`./bump.fnl`](./bump.fnl) into your project. Make sure that it is
+;;;; on Fennel search path, or add it to environment variable `$FENNEL_PATH`.
 
 ;;; BSD 3-Clause License
 ;;;
