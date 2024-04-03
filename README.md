@@ -11,6 +11,8 @@ bump.fnl - bump version and update changelog.
 
 ## Synopsis
 
+Bump command line argument version string:
+
     $ bump 1.2.3-dev # Drop pre-release label by default.
     1.2.3
 
@@ -29,6 +31,8 @@ bump.fnl - bump version and update changelog.
     $ bump 1.2.3 --any-string
     1.2.4-any-string
 
+Bump version strings in Fennel code or text file:
+
     $ bump bump.fnl && git diff
 
 ```diff
@@ -46,6 +50,8 @@ index cefa8b4..c477853 100755
  (local {: view : dofile} (require :fennel))
  
 ```
+
+Bump version and update headings and URLs in Markdown changelog:
 
     $ bump CHANGELOG.md && git diff
 
@@ -79,20 +85,22 @@ index a5a8b31..92c350a 100644
 `bump.fnl` bumps version string and update changelog. You can use it in
 command line as shown in [Synopsis](#synopsis): it can
 
-- bump command line argument version string,
-- bump version string contained in any file, or
-- update Markdown changelog according to intended version bumping
-  (**experimental feature**). It should work for any style similar
-  to [keep a changelog], at least a style like
-  [`./CHANGELOG.md`](./CHANGELOG.md).
+- bump command line argument version string;
+- bump version string contained in Fennel code or text file; or
+- update Markdown changelog automatically according to intended version
+  bumping (**experimental feature**).
+
+The last feature should work for any Markdown changelog of style similar
+to [keep a changelog], at least a style like
+[`./CHANGELOG.md`](./CHANGELOG.md).
 
 See an example usage [`./example.bash`](./example.bash).
 
-It is also a library for general-purpose [SemVer] version string
-manipulation. It provides functions to
+It is also a [Fennel] library for general-purpose [SemVer] version
+string manipulation. It provides functions to
 
-- compose/decompose version string from/to table containing major, minor,
-  and patch numbers, prerelease label, and build meta tag;
+- compose/decompose version string from/to table containing major,
+  minor, and patch numbers, prerelease label, and build meta tag;
 - compare and query about version strings;
 - bump version string; and
 - parse text to search for version strings.
@@ -100,61 +108,67 @@ manipulation. It provides functions to
 See [API documentation](#api-documentation) for more details.
 
 [keep a changelog]: https://keepachangelog.com/en/1.1.0/
+[Fennel]: https://fennel-lang.org/
 [SemVer]: https://semver.org/
 
-### Requirements
+### Installation
+
+#### Do it yourself
+
+For manual installation, it requires the following dependencies.
 
 - [PUC Lua] 5.1+ or [LuaJIT]: runtime dependency.
-- [Fennel] 1.4.2+: required only for compiling to Lua script or for using
-  it as a library. Not tested but it might even work with older versions.
+- [Fennel] 1.4.2+: required only for compiling to Lua script or for
+  using it as a library. Not tested but it might even work with older
+  versions.
 - [GNU make]: to run build tasks.
 
 [PUC Lua]: https://www.lua.org/
 [LuaJIT]: https://luajit.org/
-[Fennel]: https://fennel-lang.org/
 [GNU make]: https://www.gnu.org/software/make/
-
-### Installation
-
-#### Fennel users
 
 Run `make` and then you will find a Lua executable script `bin/bump`.
 Install it anywhere:
 
     $ make install PREFIX=$YOUR_FAVORITE_PATH
 
-To use it as a library, copy [`./bump.fnl`](./bump.fnl) into your project.
-Make sure that it is on Fennel search path, or add it to environment
-variable `$FENNEL_PATH`.
+To use it as a Fennel library, copy [`./bump.fnl`](./bump.fnl) into
+your project. Make sure that it is on Fennel search path, or add it
+to environment variable `$FENNEL_PATH`.
 
 #### Docker
 
+You can build and use a [Docker] image to run `bump.fnl` without
+installing Lua and Fennel to your environment. It requires [GNU make]
+to run build task though.
+
 Run `make docker-image` and then you will get `bump.fnl:latest` image.
-You might want to make a wrapper shell script:
+You might want to write a wrapper shell script:
 
 ```sh
 #!/bin/sh
 exec docker run -t --rm -v $PWD:/work bump.fnl "$@"
 ```
 
-#### Nix
+[Docker]: https://www.docker.com/
 
-To try `bump.fnl` one time, run
+#### Nix flake
+
+If you are a [Nix] flake user, try `bump.fnl` one time:
 
     $ nix run sourcehut:~m15a/bump.fnl -- --help
 
-To use it as an overlay,
+To use it as an overlay in your project,
 
 ```nix
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    bumpfnl.url = "sourcehut:~m15a/bump.fnl/main";
     ...
+    bumpfnl.url = "sourcehut:~m15a/bump.fnl/main";
   };
-  ...
-  outputs = inputs @ { self, nixpkgs, flake-utils, ... }:
+  outputs = inputs@{ self, nixpkgs, flake-utils, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
@@ -164,10 +178,9 @@ To use it as an overlay,
             inputs.bumpfnl.overlays.default
           ];
         };
-      in
-      {
-        devShells.default = {
-          buildInputs = [
+      in {
+        devShells.default = pkgs.mkShell {
+          packages = [
             ...
             pkgs.bumpfnl
           ];
@@ -175,6 +188,8 @@ To use it as an overlay,
       });
 }
 ```
+
+[Nix]: https://nixos.org/
 
 
 ## API documentation
