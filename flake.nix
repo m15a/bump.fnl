@@ -86,8 +86,6 @@
                   pkgs.fennel-ls-unstable
                   pkgs.fnlfmt-unstable
                   pkgs.nixfmt-rfc-style
-                  pkgs.nix-prefetch-git
-                  pkgs.nix-prefetch-github
                 ]
                 ++ (with pkgs.${fennelName}.lua.pkgs; [ readline ]);
             });
