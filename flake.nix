@@ -25,7 +25,8 @@
     }:
     {
       overlays.default = import ./nix/overlay.nix {
-        shortRev = self.shortRev or self.dirtyShortRev or self.lastModified or "unknown";
+        shortRev =
+          self.shortRev or self.dirtyShortRev or self.lastModified or "unknown";
       };
     }
     // flake-utils.lib.eachDefaultSystem (
