@@ -5,9 +5,9 @@
 final: prev:
 
 let
-  inherit (prev.lib) strings readFile optionalString;
+  inherit (prev) lib;
 
-  packageVersions = strings.fromJSON (readFile ./versions.json);
+  packageVersions = lib.strings.fromJSON (lib.readFile ./versions.json);
 in
 {
   bumpfnl = final.callPackage ./package.nix {
@@ -18,7 +18,7 @@ in
       if isNull (builtins.match ".*-[-.[:alnum:]]+$" version') then
         version'
       else
-        version' + optionalString (shortRev != null) "-${shortRev}";
+        version' + lib.optionalString (shortRev != null) "-${shortRev}";
     src = ../.;
     lua = final.luajit;
   };

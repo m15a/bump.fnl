@@ -1,7 +1,7 @@
 final: prev:
 
 let
-  inherit (prev.lib) optionalAttrs cartesianProductOfSets;
+  inherit (prev) lib;
 
   buildPackageSet = { builder, args }: builtins.listToAttrs (map builder args);
 
@@ -51,7 +51,7 @@ in
 }
 // buildPackageSet {
   inherit builder;
-  args = cartesianProductOfSets {
+  args = lib.cartesianProductOfSets {
     fennelVariant = [
       "stable"
       "unstable"
