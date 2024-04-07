@@ -15,13 +15,21 @@
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, flake-utils, fennel-tools, ... }:
+  outputs =
+    inputs@{
+      self,
+      nixpkgs,
+      flake-utils,
+      fennel-tools,
+      ...
+    }:
     {
       overlays.default = import ./nix/overlay.nix {
-        shortRev =
-          self.shortRev or self.dirtyShortRev or self.lastModified or "unknown";
+        shortRev = self.shortRev or self.dirtyShortRev or self.lastModified or "unknown";
       };
-    } // flake-utils.lib.eachDefaultSystem (system:
+    }
+    // flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = import nixpkgs {
           inherit system;
@@ -32,39 +40,57 @@
             (import ./nix/ci.nix)
           ];
         };
-      in rec {
+      in
+      rec {
         packages = rec {
           inherit (pkgs) bumpfnl;
           default = bumpfnl;
         };
 
-        apps = with flake-utils.lib;
-          builtins.mapAttrs (name: pkg:
+        apps =
+          with flake-utils.lib;
+          builtins.mapAttrs (
+            name: pkg:
             mkApp {
               drv = pkg;
               name = pkg.meta.mainProgram or pkg.pname;
-            }) packages;
+            }
+          ) packages;
 
         checks = packages;
 
         devShells = {
           inherit (pkgs)
-            ci-check-fennel-lua5_1 ci-check-fennel-lua5_2
-            ci-check-fennel-lua5_3 ci-check-fennel-lua5_4
+            ci-check-fennel-lua5_1
+            ci-check-fennel-lua5_2
+            ci-check-fennel-lua5_3
+            ci-check-fennel-lua5_4
             ci-check-fennel-luajit
 
             ci-check-fennel-unstable-lua5_1
             ci-check-fennel-unstable-lua5_2
             ci-check-fennel-unstable-lua5_3
             ci-check-fennel-unstable-lua5_4
-            ci-check-fennel-unstable-luajit;
+            ci-check-fennel-unstable-luajit
+            ;
 
-          default = let fennelName = "fennel-unstable-luajit";
-          in pkgs."ci-check-${fennelName}".overrideAttrs (old: {
-            nativeBuildInputs = old.nativeBuildInputs
-              ++ [ pkgs.fennel-ls-unstable pkgs.fnlfmt-unstable pkgs.nixfmt ]
-              ++ (with pkgs.${fennelName}.lua.pkgs; [ readline ]);
-          });
+          default =
+            let
+              fennelName = "fennel-unstable-luajit";
+            in
+            pkgs."ci-check-${fennelName}".overrideAttrs (old: {
+              nativeBuildInputs =
+                old.nativeBuildInputs
+                ++ [
+                  pkgs.fennel-ls-unstable
+                  pkgs.fnlfmt-unstable
+                  pkgs.nixfmt-rfc-style
+                  pkgs.nix-prefetch-git
+                  pkgs.nix-prefetch-github
+                ]
+                ++ (with pkgs.${fennelName}.lua.pkgs; [ readline ]);
+            });
         };
-      });
+      }
+    );
 }

@@ -1,4 +1,10 @@
-{ version, src, stdenv, lib, lua }:
+{
+  version,
+  src,
+  stdenv,
+  lib,
+  lua,
+}:
 
 stdenv.mkDerivation rec {
   pname = "bumpfnl";
@@ -7,7 +13,10 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [ lua.pkgs.fennel ];
   buildInputs = [ lua ];
 
-  makeFlags = [ "VERSION=${version}" "PREFIX=$(out)" ];
+  makeFlags = [
+    "VERSION=${version}"
+    "PREFIX=$(out)"
+  ];
 
   meta = with lib; {
     description = "A CLI tool to bump version and update changelog.";

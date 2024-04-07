@@ -5,13 +5,16 @@ let
 
   buildPackageSet = { builder, args }: builtins.listToAttrs (map builder args);
 
-  builder = { fennelVariant, luaVariant }:
+  builder =
+    { fennelVariant, luaVariant }:
     let
-      fennelName = if fennelVariant == "stable" then
-        "fennel-${luaVariant}"
-      else
-        "fennel-${fennelVariant}-${luaVariant}";
-    in {
+      fennelName =
+        if fennelVariant == "stable" then
+          "fennel-${luaVariant}"
+        else
+          "fennel-${fennelVariant}-${luaVariant}";
+    in
+    {
       name = "ci-check-${fennelName}";
       value = final.callPackage mkCICheckShell {
         fennel = final.${fennelName};
@@ -19,25 +22,46 @@ let
       };
     };
 
-  mkCICheckShell = { mkShell, fennel, faith, fnldoc }:
+  mkCICheckShell =
+    {
+      mkShell,
+      fennel,
+      faith,
+      fnldoc,
+    }:
     mkShell {
-      packages = [ fennel faith fnldoc ];
+      packages = [
+        fennel
+        faith
+        fnldoc
+      ];
       FENNEL_PATH = "${faith}/bin/?";
     };
-
-in {
+in
+{
   faith-no-compiler-sandbox = prev.faith-unstable.overrideAttrs (old: {
-    postBuild = (old.postBuild or "") + ''
-      sed -Ei bin/faith \
-          -e '1s|(fennel)|-S \1 --no-compiler-sandbox|'
-    '';
+    postBuild =
+      (old.postBuild or "")
+      + ''
+        sed -Ei bin/faith \
+            -e '1s|(fennel)|-S \1 --no-compiler-sandbox|'
+      '';
     dontFixup = true;
   });
-
-} // buildPackageSet {
+}
+// buildPackageSet {
   inherit builder;
   args = cartesianProductOfSets {
-    fennelVariant = [ "stable" "unstable" ];
-    luaVariant = [ "lua5_1" "lua5_2" "lua5_3" "lua5_4" "luajit" ];
+    fennelVariant = [
+      "stable"
+      "unstable"
+    ];
+    luaVariant = [
+      "lua5_1"
+      "lua5_2"
+      "lua5_3"
+      "lua5_4"
+      "luajit"
+    ];
   };
 }
