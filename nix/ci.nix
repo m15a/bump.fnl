@@ -51,7 +51,7 @@ in
 }
 // buildPackageSet {
   inherit builder;
-  args = lib.cartesianProductOfSets {
+  args = lib.cartesianProduct {
     fennelVariant = [
       "stable"
       "unstable"
